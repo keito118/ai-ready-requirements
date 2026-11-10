@@ -29,9 +29,55 @@
 | APP-002 | REQ-001 | AI that explains churn: references SEM-001 and ONT-002 and explains which member segments moved most. The churn formula is not written in the prompt | App / AI | 1 | 2 | 1 | 1 | 1 | 6 | Behavior lives in the app layer; definitions are referenced from below |
 | APP-003 | REQ-004 | Churn-risk member list (SEM-004) and AI-drafted outreach messages. Staff review before sending | App / AI | 1 | 2 | 1 | 1 | 1 | 6 | Each location may adjust the tone of the messages |
 
-## 3. What this example shows
+## 3. How the AI walks through it
+
+> Following the reference order of the [06 Ontology design guide](06_ontology-design.md), this section traces how the AI handles real questions.
+
+### 3.1 Ontology elements and scope
+
+| ID | Element | Scope | Point in time / AI permission |
+|---|---|---|---|
+| ONT-002 | STA states and events | Core | Status is evaluated as of the end of the previous day |
+| ONT-003 | RUL rule (deadline) | Core | |
+| ONT-001 | RUL rule (derived classification) | Core | Point in time **undecided** (found in 3.2 below) |
+| ONT-004 | ACT action: pause request. Performer = location staff; precondition = enrolled and requested by the 20th of the previous month; result = enrolled → paused | Core | AI may act only after a person confirms |
+
+> ONT-004 is an action added in this section to handle the request in 3.3.
+
+### 3.2 "Why did churn among active members at the Shibuya location go up last month?" (location manager)
+
+| Step | References | What the AI settled |
+|---|---|---|
+| VOC | "Active member" → ONT-001, "churn" → cancelled state in ONT-002, "Shibuya location" → location | Every word mapped to an official concept |
+| STR | Member — contract — location | Shibuya members = members with a contract at Shibuya |
+| STA | ONT-002, cancellation request and check-in events | Members who became cancelled as of the end of last month |
+| RUL | ONT-003, ONT-001 | "Last month's cancellations" = cancellations confirmed at the end of last month. But **as of when a member had to be active** is not defined |
+| Semantic | SEM-001, SEM-003 | The manager may see Shibuya only; no problem |
+| Data | DAT-001, DAT-002 | Last month is final, no quality errors |
+| Answer | Explained in terms of events | For example: "Most members who cancelled last month checked in twice a month or less in the two months before" |
+
+Because the point in time for ONT-001 is undefined, the AI uses the default (end of the previous day) and says so in its answer. This goes on the open issues list for the business owner.
+
+### 3.3 "Pause this member's membership" (location staff)
+
+| Step | References | What the AI settled |
+|---|---|---|
+| VOC → STA | Member, ONT-002 | The member is currently enrolled |
+| RUL | Pauses are monthly, requested by the 20th of the previous month | After the 20th, the pause starts the month after next |
+| ACT | ONT-004 | Preconditions met. AI permission is "after a person confirms", so the AI drafts the request and waits for staff to confirm |
+
+Operation requests skip the semantic layer and go straight from the ontology (ACT) to a write in the data layer.
+
+### 3.4 Open issues
+
+| No | Issue | Related ID | Owner |
+|---|---|---|---|
+| 1 | The point in time for the active member test (at the cancellation request, or at the end of the previous month) | ONT-001, SEM-001 | Head office (business owner) |
+
+## 4. What this example shows
 
 - **One request splits across layers.** REQ-001 ("weekly churn rate, explained by AI") spans the ontology (states, closing rule), the semantic layer (churn rate), the data layer (cancellation data) and the app / AI layer (dashboard, explaining AI).
 - **Prompts get thin.** The prompt for APP-002 only says "explain using SEM-001 and ONT-002", so it does not need to change when the churn definition changes.
 - **Requirements where the flow and the score disagree are worth the discussion.** SEM-004 (churn risk) started out as "an app filter", but scoring it showed that head office needs the same definition.
 - **The ontology is where interviews get difficult.** A situation like REQ-003, where the same word counts different things, is the first problem to solve before bringing in AI.
+- **Walking through it as the AI exposes gaps.** As in 3.2, tracing real questions in reference order reveals gaps such as an undefined point in time while you are still interviewing.

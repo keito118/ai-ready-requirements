@@ -32,6 +32,28 @@ Upper layers only *use* the layers below them; they never redefine what those la
 - **Cheaper implementation multiplies misplacement.** When apps are fast to build, copies of the same rule spread into screens, prompts and batch jobs.
 - **The lower layers become the shared language for AI.** With a solid ontology and semantic layer, each new agent or dashboard does not have to redefine the business from scratch.
 
+## Three tests for the boundaries
+
+| Test | If yes | If no | Example |
+|---|---|---|---|
+| T1: Can it be answered for a **single** record? | Ontology | Go to T2 | "Is this member active?" → ontology |
+| T2: Is it a calculation, aggregation or access rule over a **set**? | Semantic | Go to T3 | "Active rate = active members ÷ enrolled members" → semantic |
+| T3: Would it **change** if the system were replaced? | Data | Suspect the app / AI layer | "Check-ins are in the entry system's checkin table" → data |
+
+T1 separates **classifications that can be decided one record at a time (ontology)** from **the result of counting them (semantic)**. The semantic layer then never invents new concepts; it only counts the ontology's concepts.
+
+## Contracts between layers
+
+Even with the layers separated, AI gets lost if the joins are undefined. Require these references between layers:
+
+| Join | Required reference | Symptom when missing |
+|---|---|---|
+| Semantic → ontology | Every metric names the concept ID it counts, and the state and rule IDs it uses | Metrics carry their own embedded conditions and duplicate the concept's definition |
+| Data → ontology | Every entity is mapped to the source ID that makes it unique (the matching key) | The same member is counted as two people |
+| Data → semantic | Every metric is mapped to its source tables and columns, and their freshness (as of when) | AI answers "this month" with stale data |
+
+For how to break the ontology layer down further, see [06 Ontology design guide](06_ontology-design.md).
+
 ## Common boundary cases
 
 | Case | Layer | Why |

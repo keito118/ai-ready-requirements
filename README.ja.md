@@ -16,6 +16,7 @@ flowchart LR
   R --> F[02 判断フローと<br/>5つの指標]
   F --> M[04 振り分けマトリクス<br/>ONT- SEM- DAT- APP-]
   L[01 レイヤー定義] -. 参照 .-> F
+  OD[06 オントロジー設計] -. ONT の詳細 .-> M
 ```
 
 ## 4つのレイヤー
@@ -26,6 +27,10 @@ flowchart LR
 | セマンティック層 | どう数えるか | 指標の計算式、集計軸、粒度、期間の定義、閲覧権限 |
 | データ層 | どこから・どれだけ新しく・どれだけ正しく | ソース、取り込み頻度、品質ルール、保持期間 |
 | アプリ / AI 層 | 誰に・どう見せるか | 画面、通知、操作フロー、プロンプト、エージェントの振る舞い |
+
+### オントロジー層の中身
+
+オントロジー層は AI が最初に読む層なので、さらに5つの要素に分け、**語彙 → 構造 → 状態と事象 → ルール → アクション**の順に参照します。後ろの要素は前の要素だけを参照して書き、要素ごとに必須項目（状態には時点の定義、アクションには AI への許可（自動 / 人の確認後 / 禁止）など）を持ちます。詳しくは [オントロジー設計ガイド](framework/ja/06_ontology-design.md) を参照してください。
 
 ## 5つの指標
 
@@ -43,11 +48,12 @@ flowchart LR
 
 | # | English | 日本語 | 内容 |
 |---|---|---|---|
-| 01 | [The four layers](framework/en/01_layers.md) | [4つのレイヤー](framework/ja/01_layers.md) | 各層が持つもの・持たないもの、境界で迷うケース |
+| 01 | [The four layers](framework/en/01_layers.md) | [4つのレイヤー](framework/ja/01_layers.md) | 各層が持つもの・持たないもの、層の境目を判定する3つのテスト、層間の契約 |
 | 02 | [Placement criteria](framework/en/02_decision-criteria.md) | [振り分けの判断基準](framework/ja/02_decision-criteria.md) | 基本原則、判断フロー、5つの指標、よくある置き間違い |
 | 03 | [Interview guide](framework/en/03_interview-guide.md) | [ヒアリングガイド](framework/ja/03_interview-guide.md) | 層ごとの質問リストと、ヒアリング中に注意するサイン |
 | 04 | [Placement matrix](framework/en/04_placement-matrix.md) | [振り分けマトリクス](framework/ja/04_placement-matrix.md) | 要件ごとに層・点数・理由を記録するテンプレート |
-| 05 | [Worked example](framework/en/05_worked-example.md) | [記入例](framework/ja/05_worked-example.md) | 架空のフィットネスチェーンの退会分析。5つの要望を12の要件に振り分けた例 |
+| 05 | [Worked example](framework/en/05_worked-example.md) | [記入例](framework/ja/05_worked-example.md) | 架空のフィットネスチェーンの退会分析。5つの要望を12の要件に振り分けた例と、AI の処理のたどり方 |
+| 06 | [Ontology design guide](framework/en/06_ontology-design.md) | [オントロジー設計ガイド](framework/ja/06_ontology-design.md) | オントロジーの5要素と3段の範囲、AI が参照する順番、必須項目 |
 
 ## 使い方
 

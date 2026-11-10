@@ -15,14 +15,21 @@
 
 ## 1. Ontology (concepts, relationships, rules)
 
-| No | Question | If you hear this |
-|---|---|---|
-| O-01 | List the "things" you work with (customers, contracts, deals, products...) | Candidate entities |
-| O-02 | Does that word mean something different in other departments? | If yes, an official definition is needed (most important question) |
-| O-03 | How are X and Y related? Is it one-to-many? | Relationships and cardinality |
-| O-04 | What states can X be in, and how does it move between them? | State transitions. Ask about exceptional ones too (sent back, reactivated) |
-| O-05 | Are there rules that must always hold? | Business rules. Also ask who set them (decision owner) |
-| O-06 | When did that rule last change? | Evidence for change frequency |
+> Ask in the reference order of the [06 Ontology design guide](06_ontology-design.md): vocabulary → structure → states and events → rules → actions. Do not discuss rules before the vocabulary is agreed.
+
+| No | Element | Question | If you hear this |
+|---|---|---|---|
+| O-01 | VOC | Which words do you use most at work? Do you call the same thing by different names? | Candidate terms and synonyms |
+| O-02 | VOC | Does that word mean something different in other departments? | If yes, settle an official definition or split it into separate concepts (most important question) |
+| O-03 | VOC | When is something *not* an X? | Counter-examples; the most effective way to prevent AI misreadings |
+| O-04 | STR | What "things" do you work with, and what counts as one of each? | Entities and what makes each record unique |
+| O-05 | STR | How are X and Y related? Is it one-to-many? | Relationships and cardinality |
+| O-06 | STA | What states can X be in, and what makes it change? | States and events. Ask about exceptional ones too (sent back, reactivated) |
+| O-07 | STA | When you say "current status", as of when (today, end of yesterday, month end)? | Point-in-time definition |
+| O-08 | RUL | Are there rules that must always hold? Who set them? | Business rules and decision owner |
+| O-09 | RUL | When did that rule last change? | Change frequency and valid period |
+| O-10 | ACT | Who changes or processes what, and under which conditions? | Action performer, preconditions and result |
+| O-11 | ACT | May AI do that processing (automatically / after a person confirms / never)? | AI permission |
 
 ## 2. Semantic (definitions of numbers)
 
@@ -59,8 +66,8 @@
 
 | Signal | Meaning | Ask next |
 |---|---|---|
-| People use the same word with different meanings | The ontology is undefined | O-02, O-05 |
+| People use the same word with different meanings | The ontology is undefined | O-02, O-03, O-08 |
 | "The number on this screen is a bit different from that report" | Semantic definitions have split | S-02, S-05 |
 | "I always fix it up in Excel before using it" | Data quality issues are being absorbed by the app | D-03 |
-| Someone explains a business rule as "this is what we tell the AI" | A rule is buried in a prompt | Pull it out as an official rule with O-05 |
+| Someone explains a business rule as "this is what we tell the AI" | A rule is buried in a prompt | Pull it out as an official rule with O-08, and confirm what AI may do with O-11 |
 | "Just put it on the screen for now" | Presentation is being discussed before the definition is settled | Go back to S-01 to S-03 |
