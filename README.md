@@ -16,6 +16,7 @@ flowchart LR
   R --> F[02 Decision flow<br/>and five criteria]
   F --> M[04 Placement matrix<br/>ONT- SEM- DAT- APP-]
   L[01 Layer definitions] -. reference .-> F
+  OD[06 Ontology design] -. ONT details .-> M
 ```
 
 ## The four layers
@@ -26,6 +27,10 @@ flowchart LR
 | Semantic | How is it counted? | Metric formulas, dimensions, grain, period definitions, access |
 | Data | Where from, how fresh, how correct? | Sources, ingestion frequency, quality rules, retention |
 | App / AI | Who sees what, and how? | Screens, notifications, workflows, prompts, agent behavior |
+
+### Inside the ontology
+
+The ontology is the layer an AI reads first, so it is broken down further into five kinds of content, read in this order: **vocabulary → structure → states and events → rules → actions**. Each element can only reference the ones before it, and each has required fields, such as a point-in-time definition for states and an AI permission (automatic / after a person confirms / forbidden) for actions. See the [ontology design guide](framework/en/06_ontology-design.md).
 
 ## The five criteria
 
@@ -43,11 +48,12 @@ When the layer is unclear, score the requirement from 1 to 3 on each criterion. 
 
 | # | English | Japanese | Contents |
 |---|---|---|---|
-| 01 | [The four layers](framework/en/01_layers.md) | [4つのレイヤー](framework/ja/01_layers.md) | What each layer owns and does not own, and common boundary cases |
+| 01 | [The four layers](framework/en/01_layers.md) | [4つのレイヤー](framework/ja/01_layers.md) | What each layer owns and does not own, three tests for the boundaries, contracts between layers |
 | 02 | [Placement criteria](framework/en/02_decision-criteria.md) | [振り分けの判断基準](framework/ja/02_decision-criteria.md) | Principles, decision flow, five scoring criteria, common misplacements |
 | 03 | [Interview guide](framework/en/03_interview-guide.md) | [ヒアリングガイド](framework/ja/03_interview-guide.md) | Questions per layer, and signals to watch for in interviews |
 | 04 | [Placement matrix](framework/en/04_placement-matrix.md) | [振り分けマトリクス](framework/ja/04_placement-matrix.md) | Template for recording each requirement, its layer, scores and reason |
-| 05 | [Worked example](framework/en/05_worked-example.md) | [記入例](framework/ja/05_worked-example.md) | Membership churn at a fictional fitness chain, from five requests to twelve placed requirements |
+| 05 | [Worked example](framework/en/05_worked-example.md) | [記入例](framework/ja/05_worked-example.md) | Membership churn at a fictional fitness chain, from five requests to twelve placed requirements, and how an AI walks through them |
+| 06 | [Ontology design guide](framework/en/06_ontology-design.md) | [オントロジー設計ガイド](framework/ja/06_ontology-design.md) | Five kinds of ontology content and three tiers of scope, the order AI reads them in, and required fields |
 
 ## Usage
 

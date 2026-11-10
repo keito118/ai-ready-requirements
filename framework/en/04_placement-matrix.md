@@ -46,9 +46,11 @@
 
 ### 3.1 Ontology
 
-| ID | Kind (entity / relationship / state / rule / term) | Definition | Decision owner |
-|---|---|---|---|
-| ONT-001 | | | |
+> Elements, scope and required fields follow the [06 Ontology design guide](06_ontology-design.md). Order the rows by element (VOC → STR → STA → RUL → ACT), so that each row only references rows above it.
+
+| ID | Element (VOC / STR / STA / RUL / ACT) | Scope (core / domain name) | Official name | Definition | Counter-examples (not included) | Point in time (STA) | AI permission (ACT) | References | Decision owner | Status | Valid period |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| ONT-001 | | | | | | | | | | Draft | YYYY-MM-DD– |
 
 ### 3.2 Semantic
 
@@ -77,6 +79,9 @@
 - [ ] Access rules are defined in `SEM-` and apply equally through AI agents
 - [ ] Requirements scoring around 8–9, and requirements where the flow and score disagreed, have a written reason
 - [ ] Every `ONT-` and `SEM-` has a decision owner
+- [ ] Each `ONT-` only references earlier elements (no references in the other direction)
+- [ ] Every `SEM-` references the `ONT-` it counts
+- [ ] States (STA) have a point-in-time definition, and actions (ACT) have an AI permission
 
 ## 5. Open issues
 
