@@ -17,7 +17,7 @@ flowchart TD
   SPLIT -- Yes --> DIV[Split it by layer and<br/>place each part from the start] --> S
   SPLIT -- No --> Q1{"What is it?<br/>A concept, relationship,<br/>state or business rule?"}
   Q1 -- Yes --> ONT[Ontology]
-  Q1 -- No --> Q2{"How is it counted?<br/>A metric formula, dimension,<br/>grain or access rule?"}
+  Q1 -- No --> Q2{"How is it counted?<br/>A metric formula, dimension,<br/>or grain?"}
   Q2 -- Yes --> SEM[Semantic]
   Q2 -- No --> Q3{"Where from, how fresh, how correct?<br/>Source, freshness or quality?"}
   Q3 -- Yes --> DAT[Data]
@@ -65,7 +65,7 @@ When the flow and the score disagree:
 | Metrics defined by dashboard formulas | The same "revenue" differs from screen to screen | Semantic |
 | Data quality issues patched in the app | That screen looks right, but other users and AI still get dirty data | Fix it in the data layer as a quality rule |
 | Display labels and sort orders in the ontology | The conceptual model keeps changing for UI reasons | App / AI |
-| Access control implemented per app | Data that should be hidden becomes visible through an AI agent | Semantic (row- and column-level access) |
+| Access control implemented per app | Data that should be hidden becomes visible through an AI agent | Policy (cross-cutting; row- and column-level access applied on every path) |
 
 ## Record the decision
 

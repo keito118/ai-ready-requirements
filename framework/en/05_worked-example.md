@@ -21,7 +21,7 @@
 | ONT-003 | REQ-001 | Cancellations take effect at month end and must be requested by the 20th of the previous month | Ontology | 3 | 3 | 2 | 3 | 3 | 14 | A business rule; the basis for the AI's answer to "can I cancel this month?" |
 | SEM-001 | REQ-001 | Weekly churn rate = members whose cancellation was confirmed that week ÷ enrolled members at the start of the week (paused members excluded from the denominator) | Semantic | 3 | 2 | 2 | 2 | 3 | 12 | Location managers, head office and the AI must all use the same number |
 | SEM-002 | REQ-002 | Membership revenue = fees of enrolled members, before tax. Suspension fees are a separate metric, "suspension revenue" | Semantic | 3 | 3 | 2 | 2 | 2 | 12 | Must match accounting's monthly close |
-| SEM-003 | REQ-001, 004 | Access: location managers and staff see their own location only; head office sees all. AI agents inherit the permissions of the person using them | Semantic | 3 | 3 | 2 | 3 | 3 | 14 | Prevents other locations' member data from leaking through the AI |
+| POL-001 | REQ-001, 004 | Access: location managers and staff see their own location only; head office sees all. AI agents inherit the permissions of the person using them | Policy | 3 | 3 | 2 | 3 | 3 | 14 | Prevents other locations' member data from leaking through the AI |
 | SEM-004 | REQ-004 | Churn-risk member = enrolled, no check-in in the last 14 days, and last month's check-ins fell to half or less of the month before | Semantic | 2 | 2 | 1 | 2 | 2 | 9 | The flow said app layer, but it scores 9. Head office campaigns and the AI's message drafts use the same condition, so it becomes a shared definition |
 | DAT-001 | REQ-005 | Ingest check-ins from the entry system every 15 minutes (currently daily) | Data | - | - | - | - | - | - | A freshness issue; definitions do not change |
 | DAT-002 | REQ-001 | Ingest cancellation requests from the membership system daily. Flag records whose cancellation date is not a month end as quality errors | Data | - | - | - | - | - | - | Stops data that breaks ONT-003 at the entrance |
@@ -52,7 +52,7 @@
 | STR | Member — contract — location | Shibuya members = members with a contract at Shibuya |
 | STA | ONT-002, cancellation request and check-in events | Members who became cancelled as of the end of last month |
 | RUL | ONT-003, ONT-001 | "Last month's cancellations" = cancellations confirmed at the end of last month. But **as of when a member had to be active** is not defined |
-| Semantic | SEM-001, SEM-003 | The manager may see Shibuya only; no problem |
+| Semantic / policy | SEM-001, POL-001 | The manager may see Shibuya only; no problem |
 | Data | DAT-001, DAT-002 | Last month is final, no quality errors |
 | Answer | Explained in terms of events | For example: "Most members who cancelled last month checked in twice a month or less in the two months before" |
 

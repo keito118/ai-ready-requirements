@@ -40,7 +40,7 @@
 | S-03 | When does "this month" start and end? | Period definition (calendar month, fiscal month, closing date) |
 | S-04 | How do you slice that number (by region, by owner...)? | Dimensions and grain |
 | S-05 | Do different departments report different numbers under the same name? | Split definitions: unify them, or separate them into differently named metrics |
-| S-06 | Who may see that number, and who must not? | Row- and column-level access. Confirm it also applies through AI |
+| S-06 | Who may see that number, and who must not? | Row- and column-level access (record it as policy). Confirm it also applies through AI |
 
 ## 3. Data (sources, quality, freshness)
 

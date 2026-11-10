@@ -7,13 +7,16 @@
 ```mermaid
 flowchart TB
   APP["App / AI layer<br/>presentation, interaction, prompts, agent behavior"]
-  SEM["Semantic layer<br/>metric definitions, dimensions, grain, access"]
+  SEM["Semantic layer<br/>metric definitions, dimensions, grain"]
   ONT["Ontology layer<br/>business concepts, relationships, states, rules"]
   DAT["Data layer<br/>sources, ingestion, quality, freshness, retention"]
   APP --> SEM --> ONT
   ONT -. stored as .-> DAT
   SEM -. computed from .-> DAT
+  POL["Policy (cross-cutting)<br/>who may see what"] -. applied on every path .-> DAT
 ```
+
+**Policy** (who may see what) is a cross-cutting rule, separate from the four layers. Some processing, such as a single-record lookup, never passes through the semantic layer, so access is not placed in any one layer; it is applied on every path that touches data.
 
 Upper layers only *use* the layers below them; they never redefine what those layers mean. Meaning and rules go into **the lowest layer that everyone who needs them can reach**.
 
@@ -22,7 +25,7 @@ Upper layers only *use* the layers below them; they never redefine what those la
 | Layer | In one phrase | Owns | Does not own | Typical implementation |
 |---|---|---|---|---|
 | Ontology | The business's things, relationships and rules | Entities (customer, contract, product), relationships (a customer has many contracts), states and transitions (contract: applied → active → cancelled), business rules (cancellations close at month end), the official meaning of terms | Calculation formulas, display labels, quirks of source systems | Conceptual model, knowledge graph, domain model, glossary, master data definitions |
-| Semantic | The definition of the numbers | Metric formulas (revenue, churn rate), dimensions, grain, period definitions (fiscal or calendar month), row- and column-level access | The definition of business concepts themselves, screen layout | Metrics layer, dbt semantic models, BI data models, metric catalog |
+| Semantic | The definition of the numbers | Metric formulas (revenue, churn rate), dimensions, grain, period definitions (fiscal or calendar month) | The definition of business concepts themselves, screen layout | Metrics layer, dbt semantic models, BI data models, metric catalog |
 | Data | Where data comes from and how good it is | Source systems, ingestion method and frequency, data quality rules (missing, duplicate, inconsistent), history handling, retention, lineage | The meaning of metrics, business rule decisions | Data warehouse / lake, ETL / ELT, data quality checks, data catalog |
 | App / AI | Who sees what, how, and what it does | Screens, reports, notifications, workflows, AI prompts and tools, agent permissions, UX defaults and sort orders | Business rules and metric definitions (if written here they drift from other consumers) | Web apps, BI dashboards, chat UIs, AI agents |
 
@@ -37,8 +40,9 @@ Upper layers only *use* the layers below them; they never redefine what those la
 | Test | If yes | If no | Example |
 |---|---|---|---|
 | T1: Can it be answered for a **single** record? | Ontology | Go to T2 | "Is this member active?" → ontology |
-| T2: Is it a calculation, aggregation or access rule over a **set**? | Semantic | Go to T3 | "Active rate = active members ÷ enrolled members" → semantic |
-| T3: Would it **change** if the system were replaced? | Data | Suspect the app / AI layer | "Check-ins are in the entry system's checkin table" → data |
+| T2: Is it a calculation or aggregation over a **set**? | Semantic | Go to T3 | "Active rate = active members ÷ enrolled members" → semantic |
+| T3: Would it **change** if the system were replaced? | Data | Go to T4 | "Check-ins are in the entry system's checkin table" → data |
+| T4: Is it about who may **see** what? | Policy (cross-cutting) | App / AI layer | "Location managers see only their own location's members" → policy |
 
 T1 separates **classifications that can be decided one record at a time (ontology)** from **the result of counting them (semantic)**. The semantic layer then never invents new concepts; it only counts the ontology's concepts.
 
@@ -62,4 +66,4 @@ For how to break the ontology layer down further, see [06 Ontology design guide]
 | Whether dormant customers are in the denominator of "activation rate" | Semantic | It is about how the metric is calculated |
 | Contract data only reflects up to the previous day | Data | It is about freshness; the metric definition does not change |
 | The churn rate threshold at which a dashboard turns red | App / AI | It is presentation. If the threshold is also a business standard (for example the alert line for board meetings), move it to the semantic layer |
-| Which customer data an AI may use in its answers | Semantic (access) + App / AI (tool configuration) | Who may see what is decided below; the agent inherits it |
+| Which customer data an AI may use in its answers | Policy (cross-cutting) + App / AI (tool configuration) | Who may see what is decided in the policy; the agent inherits the permissions of the person using it |
