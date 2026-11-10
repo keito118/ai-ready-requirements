@@ -24,9 +24,11 @@ flowchart LR
 | レイヤー | 答える問い | 例 |
 |---|---|---|
 | オントロジー層 | それは何か | 顧客、契約、状態遷移、業務ルール、用語の正式な意味 |
-| セマンティック層 | どう数えるか | 指標の計算式、集計軸、粒度、期間の定義、閲覧権限 |
+| セマンティック層 | どう数えるか | 指標の計算式、集計軸、粒度、期間の定義 |
 | データ層 | どこから・どれだけ新しく・どれだけ正しく | ソース、取り込み頻度、品質ルール、保持期間 |
 | アプリ / AI 層 | 誰に・どう見せるか | 画面、通知、操作フロー、プロンプト、エージェントの振る舞い |
+
+閲覧権限（誰が何を見てよいか）は特定の層に置かず、横断的な**ポリシー**として扱います。セマンティック層を通らない1件の問い合わせも含め、すべての経路で必ず適用するためです。
 
 ### オントロジー層の中身
 
@@ -54,6 +56,7 @@ flowchart LR
 | 04 | [Placement matrix](framework/en/04_placement-matrix.md) | [振り分けマトリクス](framework/ja/04_placement-matrix.md) | 要件ごとに層・点数・理由を記録するテンプレート |
 | 05 | [Worked example](framework/en/05_worked-example.md) | [記入例](framework/ja/05_worked-example.md) | 架空のフィットネスチェーンの退会分析。5つの要望を12の要件に振り分けた例と、AI の処理のたどり方 |
 | 06 | [Ontology design guide](framework/en/06_ontology-design.md) | [オントロジー設計ガイド](framework/ja/06_ontology-design.md) | オントロジーの5要素と3段の範囲、AI が参照する順番、必須項目 |
+| 07 | [How AI processes a question](framework/en/07_ai-processing-flow.md) | [AI が質問を処理する流れ](framework/ja/07_ai-processing-flow.md) | 質問から回答までの5段階、質問の種類ごとの経路、各段階で守ること、戻り道。図つき HTML 版：[docs/ai-processing-flow.html](docs/ai-processing-flow.html) |
 
 ## 使い方
 

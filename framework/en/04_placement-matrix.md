@@ -20,6 +20,7 @@
 | `SEM-` | A requirement placed in the semantic layer |
 | `DAT-` | A requirement placed in the data layer |
 | `APP-` | A requirement placed in the app / AI layer |
+| `POL-` | A cross-cutting policy requirement: who may see what |
 
 > When used together with a requirements definition (such as `FR-` IDs from doc-templates), write the `FR-` number in the "Related ID" column so requirements stay traceable.
 
@@ -54,7 +55,7 @@
 
 ### 3.2 Semantic
 
-| ID | Kind (metric / dimension / period / access) | Definition or formula | Ontology referenced | Decision owner |
+| ID | Kind (metric / dimension / period) | Definition or formula | Ontology referenced | Decision owner |
 |---|---|---|---|---|
 | SEM-001 | | | ONT- | |
 
@@ -76,7 +77,7 @@
 - [ ] No definition or rule is written in more than one layer
 - [ ] No `APP-` requirement holds its own business rules or metric formulas (it references them)
 - [ ] Anything planned for an AI prompt is only a reference to `ONT-` / `SEM-` definitions
-- [ ] Access rules are defined in `SEM-` and apply equally through AI agents
+- [ ] Access rules are defined in `POL-` and apply on every path, including single-record lookups and AI agents
 - [ ] Requirements scoring around 8–9, and requirements where the flow and score disagreed, have a written reason
 - [ ] Every `ONT-` and `SEM-` has a decision owner
 - [ ] Each `ONT-` only references earlier elements (no references in the other direction)

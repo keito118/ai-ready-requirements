@@ -24,9 +24,11 @@ flowchart LR
 | Layer | Question it answers | Examples |
 |---|---|---|
 | Ontology | What is it? | Customer, contract, state transitions, business rules, official terms |
-| Semantic | How is it counted? | Metric formulas, dimensions, grain, period definitions, access |
+| Semantic | How is it counted? | Metric formulas, dimensions, grain, period definitions |
 | Data | Where from, how fresh, how correct? | Sources, ingestion frequency, quality rules, retention |
 | App / AI | Who sees what, and how? | Screens, notifications, workflows, prompts, agent behavior |
+
+Access rules (who may see what) are a cross-cutting **policy**, not part of any one layer, so they apply on every path, including single-record lookups that never touch the semantic layer.
 
 ### Inside the ontology
 
@@ -54,6 +56,7 @@ When the layer is unclear, score the requirement from 1 to 3 on each criterion. 
 | 04 | [Placement matrix](framework/en/04_placement-matrix.md) | [振り分けマトリクス](framework/ja/04_placement-matrix.md) | Template for recording each requirement, its layer, scores and reason |
 | 05 | [Worked example](framework/en/05_worked-example.md) | [記入例](framework/ja/05_worked-example.md) | Membership churn at a fictional fitness chain, from five requests to twelve placed requirements, and how an AI walks through them |
 | 06 | [Ontology design guide](framework/en/06_ontology-design.md) | [オントロジー設計ガイド](framework/ja/06_ontology-design.md) | Five kinds of ontology content and three tiers of scope, the order AI reads them in, and required fields |
+| 07 | [How AI processes a question](framework/en/07_ai-processing-flow.md) | [AI が質問を処理する流れ](framework/ja/07_ai-processing-flow.md) | The five steps from question to answer, routes by kind of question, rules for each step, and the feedback loop. Illustrated HTML version: [docs/ai-processing-flow.html](docs/ai-processing-flow.html) |
 
 ## Usage
 

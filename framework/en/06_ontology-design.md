@@ -78,8 +78,8 @@ The AI does not need to read all five elements every time.
 | Kind of question | Example | Elements read | Then |
 |---|---|---|---|
 | Asking for a definition | "What is an active member?" | VOC → STR (→ RUL) | Answer directly |
-| Asking about one record | "Can Yamada cancel this month?" | VOC → RUL | Fetch the single record from the data layer. Skip the semantic layer |
-| Asking for a number | "What was the Shibuya location's churn rate last month?" | VOC → RUL | Semantic layer → data layer |
+| Asking about one record | "Can Yamada cancel this month?" | VOC → RUL | Check access in the policy, then fetch the single record from the data layer. Skip the semantic layer |
+| Asking for a number | "What was the Shibuya location's churn rate last month?" | VOC → RUL | Semantic layer → policy → data layer |
 | Asking why | "Why did churn go up?" | VOC → RUL, focusing on events | Break it down in the semantic layer → data layer → explain in terms of events |
 | Asking for an operation | "Pause this member's membership" | VOC → ACT | Write to the data layer. ACT decides whether a person must confirm first |
 
