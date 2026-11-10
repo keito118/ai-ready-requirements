@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AI がプロンプトを処理する流れ</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700&family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap">
 <style>
@@ -25,7 +25,7 @@
   --app:#e98bb7; --ont:#78c796; --sem:#74b4e3; --dat:#d1b06a; --pol:#a99cf0; --warn:#ee8f6e;
   --app-bg:#2c1c25; --ont-bg:#172a1f; --sem-bg:#17242f; --dat-bg:#2a2416; --pol-bg:#221f36; --warn-bg:#2e1c16;
   color-scheme:dark}
-body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.75;
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.75;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:40px 64px}
 main{max-width:940px;margin:0 auto;display:flex;flex-direction:column;gap:52px}
 h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.35;margin:0}
@@ -109,6 +109,7 @@ td .ex{display:block;font-size:12.5px;color:var(--muted)}
   h1{font-size:24px}
 }
 </style>
+<style>body{margin:0}</style>
 </head>
 <body>
 
@@ -138,20 +139,20 @@ td .ex{display:block;font-size:12.5px;color:var(--muted)}
         <div class="conn"><i></i></div>
         <div class="step">
           <div class="lane l-ont">オントロジー<small>② ONT</small></div>
-          <div class="box"><span class="verb">② 意味を確定する</span><span class="k">言葉をオブジェクトに置き換え、使うロジックと引数を決める</span><span class="pk">ポリシー：参照・実行してよいロジックか</span></div>
-          <div class="box io"><b>出力</b><span>退会率を算出する（店舗＝渋谷店, 期間＝先月）</span></div>
+          <div class="box"><span class="verb">② 解釈する</span><span class="k">言葉を正式な概念に置き換え、質問の種類と時点を決める（語彙 → 構造 → 状態と事象 → ルール → アクション）</span><span class="pk">ポリシー：実行してよいアクションか、AI に任せてよいか</span></div>
+          <div class="box io"><b>出力</b><span>概念 ID（退会・店舗）、種類＝数字、時点＝先月末</span></div>
         </div>
         <div class="conn"><i></i></div>
         <div class="step">
           <div class="lane l-sem">セマンティック<small>③ SEM</small></div>
-          <div class="box"><span class="verb">③ 計算する</span><span class="k">ロジックにバインドされたビューで計算する</span><span class="pk">ポリシー：返してよい行・列だけ</span></div>
-          <div class="box io"><b>出力</b><span>週次退会率ビューを、渋谷店の行だけで計算</span></div>
+          <div class="box"><span class="verb">③ 数え方を選ぶ</span><span class="k">定義済みの指標と切り口から選ぶ</span><span class="pk">ポリシー：返してよい範囲（行・列）だけ</span></div>
+          <div class="box io"><b>出力</b><span>指標＝退会率、切り口＝店舗、期間＝先月。渋谷店の範囲だけ</span></div>
         </div>
         <div class="conn"><i></i></div>
         <div class="step">
           <div class="lane l-dat">データ<small>④ DAT</small></div>
-          <div class="box"><span class="verb">④ 値を取る</span><span class="k">値と一緒に、鮮度と品質の情報も受け取る</span><span class="pk">ポリシー：保存・取得時の制限、マスキング</span></div>
-          <div class="box io"><b>出力</b><span>先月分は確定済み、品質エラー 0 件</span></div>
+          <div class="box"><span class="verb">④ 取得する</span><span class="k">値と一緒に、鮮度と品質の情報も受け取る</span><span class="pk">ポリシー：保存・取得時の制限、マスキング</span></div>
+          <div class="box io"><b>出力</b><span>退会率 3.1%、先月分は確定済み、品質エラー 0 件</span></div>
         </div>
         <div class="conn up"><i></i></div>
         <div class="step">
@@ -173,27 +174,26 @@ td .ex{display:block;font-size:12.5px;color:var(--muted)}
     <p>ポリシーはルールとして1か所で定義し、4つの層それぞれで同じルールを適用します。プロンプトで「見せないで」と頼むことは、ポリシーの代わりになりません。</p>
     <div class="pgrid">
       <div class="pcard" style="--c:var(--app)"><b>アプリ / AI</b><span>誰がどのエージェント・ツールを使えるか</span><em>例：スタッフは声かけ文面の生成エージェントを使える</em></div>
-      <div class="pcard" style="--c:var(--ont)"><b>オントロジー</b><span>どのロジックを実行できるか、操作を AI に任せてよいか</span><em>例：休会の申請は、AI は人の確認後のみ</em></div>
-      <div class="pcard" style="--c:var(--sem)"><b>セマンティック</b><span>ビューのどの行・列を返すか</span><em>例：店舗長には自店舗の行だけ</em></div>
+      <div class="pcard" style="--c:var(--ont)"><b>オントロジー</b><span>どのアクションを実行できるか、AI に任せてよいか</span><em>例：休会の申請は、AI は人の確認後のみ</em></div>
+      <div class="pcard" style="--c:var(--sem)"><b>セマンティック</b><span>指標をどの範囲（行・列）で返すか</span><em>例：店舗長には自店舗の行だけ</em></div>
       <div class="pcard" style="--c:var(--dat)"><b>データ</b><span>保存・取得の時点での制限</span><em>例：電話番号は AI には常にマスク</em></div>
     </div>
   </section>
 
   <section>
     <h2>質問の種類で、通る層が変わる</h2>
-    <p>AI は毎回すべての層を通るわけではありません。計算のない質問はセマンティック層を通らず、定義だけを聞く質問はデータ層まで行きません。ポリシーは、通るすべての層で効きます。</p>
+    <p>AI は毎回すべての層を通るわけではありません。1件の判定や操作は集合を数えないのでセマンティック層を通らず、定義だけを聞く質問はデータ層まで行きません。ポリシーは、通るすべての層で効きます。</p>
     <div class="tw"><table>
-      <thead><tr><th>質問の種類</th><th>① 受け取る<br>APP</th><th>② 意味<br>ONT</th><th>③ 計算<br>SEM</th><th>④ 値<br>DAT</th></tr></thead>
+      <thead><tr><th>質問の種類</th><th>① 受け取る<br>APP</th><th>② 解釈<br>ONT</th><th>③ 数え方<br>SEM</th><th>④ 取得<br>DAT</th></tr></thead>
       <tbody>
         <tr><td>定義を聞く<span class="ex">アクティブ会員って何？</span></td><td><span class="dot d-app"></span></td><td><span class="dot d-ont"></span></td><td class="skip">—</td><td class="skip">—</td></tr>
-        <tr><td>1件の属性を聞く<span class="ex">山田さんの所属店舗は？</span></td><td><span class="dot d-app"></span></td><td><span class="dot d-ont"></span></td><td class="skip">—</td><td><span class="dot d-dat"></span></td></tr>
-        <tr><td>1件を判定する<span class="ex">山田さんはアクティブ？</span></td><td><span class="dot d-app"></span></td><td><span class="dot d-ont"></span></td><td><span class="dot d-sem"></span></td><td><span class="dot d-dat"></span></td></tr>
+        <tr><td>1件を聞く<span class="ex">山田さんは今月退会できる？</span></td><td><span class="dot d-app"></span></td><td><span class="dot d-ont"></span></td><td class="skip">—</td><td><span class="dot d-dat"></span></td></tr>
         <tr><td>数字を聞く<span class="ex">先月の退会率は？</span></td><td><span class="dot d-app"></span></td><td><span class="dot d-ont"></span></td><td><span class="dot d-sem"></span></td><td><span class="dot d-dat"></span></td></tr>
         <tr><td>理由を聞く<span class="ex">なぜ退会率が上がった？</span></td><td><span class="dot d-app"></span></td><td><span class="dot d-ont"></span></td><td><span class="dot d-sem"></span></td><td><span class="dot d-dat"></span></td></tr>
         <tr><td>操作を頼む<span class="ex">この会員を休会にして</span></td><td><span class="dot d-app"></span></td><td><span class="dot d-ont"></span></td><td class="skip">—</td><td><span class="dot d-dat"></span></td></tr>
       </tbody>
     </table></div>
-    <p class="muted" style="font-size:13.5px">「理由を聞く」は、計算ロジックと因果ロジックを組み合わせ、要因のオブジェクト（会員区分など）の言葉で説明します。「操作を頼む」は、操作ロジックの前提条件を確かめ、ポリシーで AI が実行してよいか（自動 / 人の確認後 / 禁止）を確認してから書き込みます。</p>
+    <p class="muted" style="font-size:13.5px">「理由を聞く」は、数字を切り口ごとに分解したうえで、オントロジーの事象（入館の減少、退会申請など）の言葉で説明します。「操作を頼む」は、オントロジーのアクション定義で前提条件を確かめ、ポリシーで AI が実行してよいか（自動 / 人の確認後 / 禁止）を確認してから書き込みます。</p>
   </section>
 
   <section>
@@ -207,19 +207,19 @@ td .ex{display:block;font-size:12.5px;color:var(--muted)}
         <div class="why">プロンプトに書いた定義は、エージェントごとにずれていきます。</div>
       </div>
       <div class="rule" style="--c:var(--ont)">
-        <h3>② 意味を確定する：オントロジー</h3>
-        <div class="do">ラベルを索引にして、関係するオブジェクトとロジックだけを取り出し、組み合わせる</div>
+        <h3>② 解釈する：オントロジー</h3>
+        <div class="do">語彙を索引にして、関係する部分だけを取り出す</div>
         <div class="dont">オントロジー全体をプロンプトに入れる。意味を推測で補う</div>
         <div class="why">オントロジーは大きくなるため、全部を読ませると精度が落ちます。候補が複数あれば聞き返します。</div>
       </div>
       <div class="rule" style="--c:var(--sem)">
-        <h3>③ 計算する：セマンティック</h3>
-        <div class="do">ロジックにバインドされたビューを呼び出す</div>
+        <h3>③ 数え方を選ぶ：セマンティック</h3>
+        <div class="do">定義済みの指標と切り口から選ぶ</div>
         <div class="dont">SQL や計算式をその場で書く</div>
-        <div class="why">AI が式を書くと、同じ質問でも毎回違う数字になり得ます。ロジックやビューがない質問には「未定義」と答え、新しいロジックの案を出します。</div>
+        <div class="why">AI が式を書くと、同じ質問でも毎回違う数字になり得ます。定義にない質問には「未定義」と答え、新しい指標の案を出します。</div>
       </div>
       <div class="rule" style="--c:var(--dat)">
-        <h3>④ 値を取る：データ</h3>
+        <h3>④ 取得する：データ</h3>
         <div class="do">値と、いつ時点か・欠損や品質エラーをセットで受け取る</div>
         <div class="dont">値だけを受け取って答える</div>
         <div class="why">鮮度を知らない AI は、古い数字を自信を持って答えてしまいます。</div>
@@ -245,15 +245,16 @@ td .ex{display:block;font-size:12.5px;color:var(--muted)}
     <div class="fb">
       <div class="n"><b>質問</b><span>「アクティブ会員の退会率は？」</span></div>
       <div class="a">→</div>
-      <div class="n warn"><b>詰まる</b><span>退会率のロジックに、アクティブ会員に絞る引数がない</span></div>
+      <div class="n warn"><b>詰まる</b><span>いつ時点でアクティブか、定義がない</span></div>
       <div class="a">→</div>
-      <div class="n"><b>仮の回答</b><span>全会員で答え、その前提を明記する</span></div>
+      <div class="n"><b>仮の回答</b><span>既定の時点で答え、その前提を明記する</span></div>
       <div class="a">→</div>
       <div class="n"><b>記録</b><span>未決事項として業務オーナーに確認する</span></div>
       <div class="a">→</div>
-      <div class="n"><b>ロジックを追加・修正</b><span>オントロジーとビューを更新し、次からは詰まらない</span></div>
+      <div class="n"><b>定義を追加</b><span>オントロジーに時点の定義が入り、次からは詰まらない</span></div>
     </div>
   </section>
 </main>
+
 </body>
 </html>

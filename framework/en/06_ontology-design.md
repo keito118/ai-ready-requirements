@@ -1,123 +1,133 @@
 # 06. Ontology design guide
 
-> The ontology layer settles the meaning of a question that the AI has received through the app / AI layer. This guide divides the ontology into **objects, logic and bindings**, and sets out the design rules and required fields for each. For the definition of the layer itself, see [01 The four layers and the cross-cutting policy](01_layers.md).
+> The ontology is the broadest of the four layers, and it is where the AI settles the meaning of a prompt received through the app / AI layer. This guide breaks the ontology down into five kinds of content and three tiers of scope, and defines the order in which AI should reference them and the fields each element must have. For the definition of the layer itself, see [01 The four layers and the cross-cutting policy](01_layers.md).
 
-## 1. Structure
+## 1. The ontology in AI processing
+
+When an AI receives a prompt, it works down the layers: app / AI → ontology → semantic → data. The ontology's job is to **map the words in the prompt to official concepts, and settle the subject, the point in time, the constraints and the allowed operations**. The policy applies in all four layers.
 
 ```mermaid
 flowchart LR
-  IN["Question + user context<br/>run-time values: who, which department"] -- passes values --> OBJ
-  subgraph ONT[Ontology]
-    OBJ["Objects<br/>concepts and descriptions<br/>departments and brands are concepts too"]
-    LOG["Logic<br/>inputs, outputs and a description<br/>check, calculation, relation, cause, operation"]
-    BIND["Bindings<br/>concepts and logic →<br/>tables and semantic views"]
-    OBJ -- arguments --> LOG
-    LOG -- return values --> OBJ
-    OBJ --> BIND
-    LOG --> BIND
-  end
-  BIND --> SEM[Semantic layer]
-  BIND --> DAT[Data layer]
+  Q([Prompt + user context]) --> APP[App / AI<br/>receive]
+  APP --> O[Ontology<br/>what is this about, what may be done]
+  O --> S[Semantic<br/>how to count]
+  S --> D[Data<br/>where it is, how fresh, how correct]
+  O -. definitions, single-record checks and<br/>operations skip the semantic layer .-> D
+  D -. results returned in the ontology's terms .-> APP
 ```
 
-| Element | Role | Example (fitness chain) |
-|---|---|---|
-| Object | A business concept. A noun, with a description. Has attributes, states and relationships | Member, contract, location, department, check-in |
-| Logic | Takes objects as input and returns an object. A verb, with a description | is active (member, date) → true/false; calculate churn rate (location, period) → metric |
-| Binding | Where an object or piece of logic is stored or calculated | Member → member master table; calculate churn rate → weekly churn rate view |
+## 2. Five kinds of content
 
-Concepts that need no logic (such as "where is this location?") go straight from the object to its binding.
-
-## 2. Design rules
-
-| No | Rule | Why |
-|---|---|---|
-| 1 | The smallest unit is the concept. Words are labels of concepts | Departments can call the same concept by different words and it stays one concept |
-| 2 | The user context is the input that passes run-time values to concepts such as department | "Who is asking" becomes a value rather than prose in a prompt |
-| 3 | Every logic input and output is an object. Logic connects to other logic only through objects | With consistent types, AI can combine logic to reason |
-| 4 | When several pieces of logic return the same output for different departments, include the department as an argument. Always keep **one default version** with no department | Department differences live in one ontology without losing the company-wide definition |
-| 5 | Bindings come from objects and from check and calculation logic | They link meaning (ontology) to implementation (semantic and data) |
-| 6 | Naming: logic uses verbs, objects use nouns | The name alone shows whether something is a thing or a process |
-| 7 | Write what a calculation does in the logic's description **as meaning**. The calculation itself runs in the bound semantic view | The description is the meaning people and AI read; the view is the implementation that produces numbers. If AI builds formulas from descriptions, numbers drift |
-| 8 | Logic that changes state (an operation) states its preconditions and result in the description. Who (person or AI) may run it is decided by policy | What happens is meaning; who may do it is access |
-| 9 | Access control is handled outside the ontology, by the policy | Access stays consistent across all layers |
-
-## 3. Kinds of logic
-
-| Kind | Output | Example | Typical binding |
+| Code | Element | Question it answers | Example (fitness chain) |
 |---|---|---|---|
-| Check | True/false or a category | is active (member, date) → true/false | Semantic view |
-| Calculation | A metric | calculate churn rate (location, period) → metric | Semantic view |
-| Relation | Related objects | get contracts (member) → contracts | Table |
-| Cause | Objects that act as drivers | list churn drivers (location, period) → member segments | Semantic view (candidate drivers defined in advance) |
-| Operation | The changed object | request pause (member, start month) → member (paused) | Write to a table |
+| VOC | Vocabulary | Which official concept does this word refer to? | "Members", "clients" → member. "Active" → active member |
+| STR | Structure | What things exist, and how are they connected? | Member 1 — many contracts, contract many — 1 location |
+| STA | States and events | What states does a thing have, and what changes them? | Enrolled → paused → enrolled. Check-in and cancellation request as events |
+| RUL | Rules | What always holds, which deadlines apply, how is each record classified? | Cancellations close at month end. The test for an active member |
+| ACT | Actions | Who may change what, under which conditions, with what result? | Pause request: performed by staff, only when enrolled, enrolled → paused |
 
-Business rules (such as "cancellations close at month end") are written as check or calculation logic (for example, determine cancellation date (member, request date) → date). States and their transitions are attributes of an object, with their allowed values and allowed transitions.
+- **Why events sit with states**: states change because of events, and when an AI explains *why* something changed, it follows the events.
+- **Why classifications (such as active member) are rules**: a classification is derived per record from states, events and conditions. It is neither structure nor state, so it is kept as a derivation rule.
+- **Why actions belong in the ontology**: preconditions, results and AI permissions are business rules. Which button on which screen triggers the action belongs in the app / AI layer.
 
-## 4. Reference order, and what to do when something is missing
+## 3. Three tiers of scope
 
-AI reads objects → logic → bindings: it settles the objects from the words, chooses the logic it needs, and calculates or fetches through the binding.
+| Tier | Scope | Decided by | Cost of change |
+|---|---|---|---|
+| Core | Same meaning across the whole company | Executives, business owner | High. Needs company-wide agreement and an impact review |
+| Domain | One business area or department | Department head | Medium. The department decides, but must not contradict the core |
+| App-specific | One system only | Product team | Low. If it scores 8 or less on the [five criteria](02_decision-criteria.md), move it out to the app / AI layer |
 
-The same order is also the order to ask in interviews and to build in. But **you do not need to finish it top to bottom in one pass.** If, while writing logic, you find that a "check-in" object is missing, go back, add the object, and reference it from the logic. What is forbidden is quietly defining "check-in" inside the logic, which scatters the definition across two places.
+**A domain may extend the core, but must never override it.** The accounting domain may add "revenue recognition date", but may not change what "member" means. When departments use the same word with different meanings, define them as separate concepts (separate IDs) and link them through the "meaning by department" field in VOC.
 
-Because each element may only use words from the elements before it, being unable to write something tells you immediately that an earlier element has a gap. In practice you go around several times: a rough pass through everything, then back to fill in whatever could not be written.
+Combining both axes gives a picture like this:
 
-## 5. Kinds of question, and what the AI reads in the ontology
+|  | VOC Vocabulary | STR Structure | STA States and events | RUL Rules | ACT Actions |
+|---|---|---|---|---|---|
+| Core | Member, contract, location | Member—contract—location | Member status, check-in, cancellation request | Month-end cancellation, active member | Cancel membership, pause request |
+| Domain (accounting) | Recognition, suspension fee | Contract—invoice | Invoice status, payment | Pro-rata calculation | Refund |
+| Domain (location operations) | Visit, outreach | Member—assigned staff | Outreach done | Outreach target conditions | Log outreach |
+
+## 4. Reference order
+
+### 4.1 The basic order
+
+```mermaid
+flowchart LR
+  VOC[VOC Vocabulary] --> STR[STR Structure] --> STA[STA States and events] --> RUL[RUL Rules] --> ACT[ACT Actions]
+```
+
+Each element can be written using only the terms of the elements before it. A rule reads as "for this thing, in this state, when this event happens"; an action reads as "when this rule holds, from this state to that state". **Forbid references in the other direction** (such as structure depending on a rule) so that an AI can read the ontology without going in circles.
+
+The same order is also **the order to ask in interviews** and **the order to build in**. Discussing rules before the vocabulary is agreed means people use the same words for different things.
+
+### 4.2 What the AI settles at each step
+
+| Step | Element | What the AI settles | When it cannot |
+|---|---|---|---|
+| 1 | VOC | The concept ID each word refers to | Ask back if there are several candidates |
+| 2 | STR | The things involved and the relationships to follow | If a relationship is not defined, do not guess; answer "not defined" |
+| 3 | STA | Which states are in scope, and **as of when** | Use the default point in time and say so in the answer |
+| 4 | RUL | The constraints, deadlines, classifications and exceptions that apply | If core and domain conflict, follow the core and report the conflict |
+| 5 | ACT | Whether the operation is allowed, its preconditions are met, and the AI may perform it | If not permitted, do not act; say who can |
+
+### 4.3 Where the AI can stop
+
+The AI does not need to read all five elements every time.
 
 | Kind of question | Example | Elements read | Then |
 |---|---|---|---|
-| Asking for a definition | "What is an active member?" | Objects, logic descriptions | Answer directly |
-| Asking for an attribute of one record | "Which location does Yamada belong to?" | Object → binding | Fetch from the data layer |
-| Checking one record | "Is Yamada active?" | Object → check logic → binding | Check in a semantic view |
-| Asking for a number | "What was Shibuya's churn rate last month?" | Object → calculation logic → binding | Calculate in a semantic view |
-| Asking why | "Why did churn go up?" | Calculation logic + cause logic | Break it down by segment and explain in terms of the driver objects |
-| Asking for an operation | "Pause this member's membership" | Object → operation logic | Check in the policy whether AI may run it, then write to the data layer |
+| Asking for a definition | "What is an active member?" | VOC → STR (→ RUL) | Answer directly |
+| Asking about one record | "Can Yamada cancel this month?" | VOC → RUL | Fetch the single record from the data layer. Skip the semantic layer |
+| Asking for a number | "What was the Shibuya location's churn rate last month?" | VOC → RUL | Semantic layer → data layer |
+| Asking why | "Why did churn go up?" | VOC → RUL, focusing on events | Break it down in the semantic layer → data layer → explain in terms of events |
+| Asking for an operation | "Pause this member's membership" | VOC → ACT | Write to the data layer. ACT decides whether a person must confirm first |
 
-## 6. Required fields
+**Single-record checks do not go through the semantic layer.** The semantic layer computes over sets, so a decision about one record is made directly with the ontology's rules. Substituting a metric here leads to mismatches such as "cancelled in the totals, but enrolled on the member's own screen".
 
-### 6.1 Objects
+## 5. Required fields
+
+### 5.1 Common to every element
 
 | Field | Required | Why |
 |---|---|---|
-| ID, official name (noun) | Yes | |
-| Labels (synonyms, names used by each department) | Yes | The index that leads from words to concepts |
-| Description (1–2 sentences) | Yes | AI grasps meaning from prose before structured fields |
+| ID | Yes | Referenced from other layers and elements |
+| Official name | Yes | |
+| Definition (1–2 sentences) | Yes | AI grasps meaning from prose before structured fields |
+| Element (VOC / STR / STA / RUL / ACT) | Yes | Keeps the reference order intact |
+| Scope (core / domain name / app) | Yes | Decides precedence in conflicts, and who may decide |
+| Decision owner | Yes | If unknown, record it as "undecided" |
+| Status (draft / approved / deprecated) | Yes | AI uses only approved items, and flags drafts as unconfirmed |
+| Valid period (from / to) | Yes | When a rule changes, past numbers are read differently before and after |
 | Counter-examples (what is not included) | Recommended, strongly for AI | Negative definitions reduce AI misreadings more than anything else |
-| What makes it unique | Yes | What counts as one record |
-| Main attributes and relationships | Yes | Relationships name the other object and the cardinality |
-| States (allowed values, allowed transitions, **point-in-time definition**) | Yes, if it has states | "Members this month" differs between start of month and now |
-| Binding | Recommended | Storage table and matching key |
-| Decision owner, status (draft / approved / deprecated), valid period | Yes | AI uses only approved items, and flags drafts as unconfirmed |
+| Source (interview No, policy name) | Recommended | So the reason for the definition can be explained |
 
-### 6.2 Logic
+### 5.2 Per element
 
-| Field | Required | Why |
+| Element | Required fields | Nice to have |
 |---|---|---|
-| ID, name (verb) | Yes | |
-| Kind (check / calculation / relation / cause / operation) | Yes | |
-| Inputs (objects), output (object) | Yes | To connect logic together |
-| Description (what it does, as meaning) | Yes | For calculations too, write the meaning, not the formula |
-| Point-in-time handling | Yes, if it depends on time | Decide "as of when" through an argument or a default |
-| Department versions and the default version | Yes, if it differs by department | Rule 4 |
-| Binding (the view that implements it) | Yes, for checks and calculations | Rule 7 |
-| Preconditions and result | Yes, for operations | Rule 8. Who may run it goes in the policy |
-| Decision owner, status, valid period | Yes | When a rule changes, past numbers are read differently before and after |
+| VOC Vocabulary | Concept ID, synonyms and alternative wordings | Meaning by department, meanings not to use, name in other languages |
+| STR Structure (entity) | What makes one record unique, main attributes | ID mapping per source (reference to the data layer) |
+| STR Structure (relationship) | Entities on both ends, cardinality, required or optional | Whether it changes over time (history) |
+| STA States | List of states, initial and final states, allowed transitions, **point-in-time definition** | Typical time per transition |
+| STA Events | When it is recorded, definition of its timestamp, the transitions it triggers | How cancellations of the event are handled |
+| RUL Rules | Kind (constraint / deadline / derived classification), subject, condition, exceptions, handling of violations (error / warning / human decision) | Reference to the data quality rule that detects violations |
+| ACT Actions | Performer (role), preconditions (STA and RUL IDs), result (state transition), **AI permission** (automatic / after human confirmation / forbidden; applied as policy in every layer) | Reversibility, approver, who is notified |
 
-### 6.3 Four fields that matter most for AI
+### 5.3 Four fields that matter most for AI
 
 | Field | Why |
 |---|---|
-| Description | With only IDs and enumerations, AI misjudges what a concept or process is for |
+| Definition | With only IDs and enumerations, AI misjudges what a classification is for |
 | Counter-examples | AI tends to read boundaries broadly; stating what is excluded tightens them |
-| Point-in-time definition | Without it, AI picks a different point in time each time |
-| Binding | With it, AI calls a view instead of assembling a formula, so the numbers are the same every time |
+| Point-in-time definition | "Members this month" differs between start of month and now. Without it, AI picks a different reading each time |
+| AI permission | Replaces "don't process this on your own" in prompts with a definition, so the constraint holds for every new agent |
 
-## 7. Common dilemmas
+## 6. Common dilemmas
 
 | Dilemma | How to handle it |
 |---|---|
-| Departments use a word differently and will not unify | If it is the same concept, absorb the different names as labels. If the meaning differs, make separate objects or logic with a department argument |
-| The ontology grows too large | Give AI only the relevant part, using labels as the index. Never put the whole ontology in a prompt |
-| A calculation's description and its view disagree | Review on the basis that the view implements the description. When the description changes, change the view at the same time |
-| Show past numbers with the definition at the time, or today's? | Give logic a valid period, and state in the description which one is used |
-| BI tools query semantic views directly | That is an entrance that bypasses the ontology, leaving room for meaning to drift. Make each view's description a link to its ontology logic rather than a second definition |
+| Is a classification a rule, or a semantic-layer metric? | If it can be decided per record, it is a rule (RUL). If deciding it needs information about the whole set ("top 10% of members"), define it in the semantic layer and only reference it from the ontology |
+| Departments use a word differently and will not unify | Do not override. Define separate concepts, link them in VOC, and let AI translate between them |
+| Where do the detailed steps of an approval workflow go? | Whose approval is required (a precondition) goes in ACT. The approval screen flow and notification text go in the app / AI layer |
+| Show past numbers with the definition at the time, or today's? | The ontology only records valid periods. Which one to use is decided per metric in the semantic layer |
