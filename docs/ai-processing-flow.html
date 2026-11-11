@@ -2,33 +2,32 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>AI が質問を処理する流れ</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI がプロンプトを処理する流れ</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700&family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap">
 <style>
-/* Layout: a vertical pipeline (one row per step, layer on the left, in/out on the right) with a feedback rail on the far left */
+/* Layout: a vertical pipeline (one row per step; layer on the left, in/out on the right), a feedback rail on the far left and a policy rail on the far right */
 :root{
   --bg:#f5f6f8; --surface:#ffffff; --fg:#1c2230; --muted:#5d6676; --line:#d8dce4;
-  --ont:#3d8f5f; --sem:#2f7fb8; --pol:#6a5acd; --dat:#8a6d2f; --ans:#c2558b; --warn:#b54a2a;
-  --ont-bg:#ebf6ef; --sem-bg:#eaf3fa; --pol-bg:#efedfb; --dat-bg:#f6f0e3; --ans-bg:#fbeef4; --warn-bg:#fbece6;
+  --app:#c2558b; --ont:#3d8f5f; --sem:#2f7fb8; --dat:#8a6d2f; --pol:#6a5acd; --warn:#b54a2a;
+  --app-bg:#fbeef4; --ont-bg:#ebf6ef; --sem-bg:#eaf3fa; --dat-bg:#f6f0e3; --pol-bg:#efedfb; --warn-bg:#fbece6;
   --f-display:"Zen Kaku Gothic New","Noto Sans JP",system-ui,sans-serif;
   --f-body:"Noto Sans JP",system-ui,-apple-system,"Hiragino Sans",sans-serif;
   --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#12151b; --surface:#1a1e26; --fg:#e6e9ef; --muted:#9ba3b3; --line:#2d333f;
-  --ont:#78c796; --sem:#74b4e3; --pol:#a99cf0; --dat:#d1b06a; --ans:#e98bb7; --warn:#ee8f6e;
-  --ont-bg:#172a1f; --sem-bg:#17242f; --pol-bg:#221f36; --dat-bg:#2a2416; --ans-bg:#2c1c25; --warn-bg:#2e1c16;
+  --app:#e98bb7; --ont:#78c796; --sem:#74b4e3; --dat:#d1b06a; --pol:#a99cf0; --warn:#ee8f6e;
+  --app-bg:#2c1c25; --ont-bg:#172a1f; --sem-bg:#17242f; --dat-bg:#2a2416; --pol-bg:#221f36; --warn-bg:#2e1c16;
   color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#12151b; --surface:#1a1e26; --fg:#e6e9ef; --muted:#9ba3b3; --line:#2d333f;
-  --ont:#78c796; --sem:#74b4e3; --pol:#a99cf0; --dat:#d1b06a; --ans:#e98bb7; --warn:#ee8f6e;
-  --ont-bg:#172a1f; --sem-bg:#17242f; --pol-bg:#221f36; --dat-bg:#2a2416; --ans-bg:#2c1c25; --warn-bg:#2e1c16;
+  --app:#e98bb7; --ont:#78c796; --sem:#74b4e3; --dat:#d1b06a; --pol:#a99cf0; --warn:#ee8f6e;
+  --app-bg:#2c1c25; --ont-bg:#172a1f; --sem-bg:#17242f; --dat-bg:#2a2416; --pol-bg:#221f36; --warn-bg:#2e1c16;
   color-scheme:dark}
-body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.75;
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.75;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:40px 64px}
-main{max-width:920px;margin:0 auto;display:flex;flex-direction:column;gap:52px}
+main{max-width:940px;margin:0 auto;display:flex;flex-direction:column;gap:52px}
 h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.35;margin:0}
 h1{font-size:29px} h2{font-size:21px;padding-bottom:8px;border-bottom:1px solid var(--line)} h3{font-size:15px}
 p{margin:0;max-width:65ch}
@@ -38,37 +37,49 @@ section{display:flex;flex-direction:column;gap:18px}
 .muted{color:var(--muted)}
 
 /* pipeline */
-.pipe{display:grid;grid-template-columns:34px 1fr;gap:0 14px}
-.loop{grid-row:1 / span 6;position:relative}
-.loop::before{content:"";position:absolute;left:14px;top:34px;bottom:46px;border:2px dashed var(--warn);border-right:none;border-radius:10px 0 0 10px;width:16px}
-.loop span{position:absolute;left:-2px;top:50%;transform:translateY(-50%);writing-mode:vertical-rl;font-size:12px;font-weight:700;color:var(--warn);background:var(--bg);padding:6px 0;letter-spacing:.1em}
-.steps{display:flex;flex-direction:column;gap:0}
+.pipe{display:grid;grid-template-columns:34px 1fr 40px;gap:0 14px}
+.loop{position:relative}
+.loop::before{content:"";position:absolute;left:14px;top:110px;bottom:40px;border:2px dashed var(--warn);border-right:none;border-radius:10px 0 0 10px;width:16px}
+.loop span{position:absolute;left:-2px;top:55%;transform:translateY(-50%);writing-mode:vertical-rl;font-size:12px;font-weight:700;color:var(--warn);background:var(--bg);padding:6px 0;letter-spacing:.1em}
+.prail{background:var(--pol-bg);border:1px dashed var(--pol);border-radius:8px;margin-block:60px 0;display:flex;align-items:center;justify-content:center}
+.prail span{writing-mode:vertical-rl;font-family:var(--f-display);font-weight:700;color:var(--pol);letter-spacing:.15em;font-size:14px}
+.steps{display:flex;flex-direction:column;gap:0;min-width:0}
 .step{display:grid;grid-template-columns:118px 1fr 1fr;gap:14px;align-items:stretch}
 .lane{border-radius:8px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:2px;padding:10px 6px;font-family:var(--f-display);font-weight:700;text-align:center;line-height:1.3}
 .lane small{font-family:var(--f-mono);font-size:11px;font-weight:500;opacity:.85}
 .box{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;min-width:0}
 .box .verb{font-family:var(--f-display);font-weight:700;font-size:16px}
 .box .k{font-size:12px;color:var(--muted)}
+.box .pk{font-size:12px;color:var(--pol)}
 .io{font-size:13.5px}
 .io b{font-weight:700}
 .conn{height:22px;display:grid;grid-template-columns:118px 1fr 1fr;gap:14px}
 .conn i{justify-self:center;width:2px;background:var(--line);position:relative}
 .conn i::after{content:"";position:absolute;bottom:-1px;left:-4px;border:5px solid transparent;border-top-color:var(--muted)}
-.l-ont{background:var(--ont-bg);color:var(--ont)} .l-sem{background:var(--sem-bg);color:var(--sem)}
-.l-pol{background:var(--pol-bg);color:var(--pol)} .l-dat{background:var(--dat-bg);color:var(--dat)}
-.l-ans{background:var(--ans-bg);color:var(--ans)} .l-q{background:var(--surface);color:var(--fg);border:1px solid var(--line)}
+.conn.up i::after{bottom:auto;top:-1px;border-top-color:transparent;border-bottom-color:var(--muted)}
+.l-app{background:var(--app-bg);color:var(--app)} .l-ont{background:var(--ont-bg);color:var(--ont)}
+.l-sem{background:var(--sem-bg);color:var(--sem)} .l-dat{background:var(--dat-bg);color:var(--dat)}
+.l-q{background:var(--surface);color:var(--fg);border:1px solid var(--line)}
 .legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--muted)}
 .legend .dash{display:inline-block;width:22px;border-top:2px dashed var(--warn);vertical-align:middle;margin-right:6px}
+.legend .pd{display:inline-block;width:14px;height:14px;border:1px dashed var(--pol);background:var(--pol-bg);border-radius:3px;vertical-align:middle;margin-right:6px}
+
+/* policy per layer */
+.pgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.pcard{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;min-width:0;border-top:4px solid var(--c)}
+.pcard b{font-family:var(--f-display);color:var(--c)}
+.pcard span{font-size:13.5px}
+.pcard em{font-style:normal;font-size:12.5px;color:var(--muted)}
 
 /* routes */
 .tw{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
-table{border-collapse:collapse;width:100%;font-size:14px;min-width:620px}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:600px}
 th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:center;vertical-align:middle}
 th{font-size:12.5px;font-weight:500;color:var(--muted);background:var(--bg)}
 td:first-child,th:first-child{text-align:left}
 tr:last-child td{border-bottom:none}
 .dot{display:inline-block;width:14px;height:14px;border-radius:50%}
-.d-ont{background:var(--ont)} .d-sem{background:var(--sem)} .d-pol{background:var(--pol)} .d-dat{background:var(--dat)} .d-ans{background:var(--ans)}
+.d-app{background:var(--app)} .d-ont{background:var(--ont)} .d-sem{background:var(--sem)} .d-dat{background:var(--dat)}
 .skip{color:var(--line);font-weight:700}
 td .ex{display:block;font-size:12.5px;color:var(--muted)}
 
@@ -89,22 +100,24 @@ td .ex{display:block;font-size:12.5px;color:var(--muted)}
 .fb .warn{border-color:var(--warn);background:var(--warn-bg)}
 
 @media (max-width:680px){
+  .pipe{grid-template-columns:24px 1fr 28px;gap:0 8px}
   .step,.conn{grid-template-columns:84px 1fr}
   .step .io{grid-column:2}
-  .conn i{justify-self:center}
-  .conn::after{content:none}
+  .pgrid{grid-template-columns:1fr 1fr}
+  .prail span{font-size:12px}
   .fb .a{transform:rotate(90deg);align-self:center;width:100%;text-align:center}
   h1{font-size:24px}
 }
 </style>
+<style>body{margin:0}</style>
 </head>
 <body>
 
 <main>
   <header style="display:flex;flex-direction:column;gap:12px">
     <div class="eyebrow">AI-Ready Requirements · 処理の流れ</div>
-    <h1>AI が質問を処理する流れ</h1>
-    <p class="lead">AI は質問を受け取ると、意味 → 数え方 → 権限 → 値 の順に具体化して答えます。各段階で読む層が決まっていて、どこかで定義が足りないと、回答を説明できなくなります。</p>
+    <h1>AI がプロンプトを処理する流れ</h1>
+    <p class="lead">AI はプロンプトを受け取ると、アプリ / AI → オントロジー → セマンティック → データ の順に層を下り、結果を逆向きにたどって回答します。ポリシーは4つの層すべてにまたがって効きます。</p>
   </header>
 
   <section>
@@ -113,94 +126,115 @@ td .ex{display:block;font-size:12.5px;color:var(--muted)}
       <div class="loop" aria-hidden="true"><span>説明できない＝定義の穴</span></div>
       <div class="steps">
         <div class="step">
-          <div class="lane l-q">質問・依頼</div>
-          <div class="box"><span class="verb">受け取る</span><span class="k">自然言語のまま</span></div>
-          <div class="box io"><span>「渋谷店の先月のアクティブ会員の退会率は？」</span></div>
+          <div class="lane l-q">プロンプト</div>
+          <div class="box"><span class="verb">質問と、ユーザーコンテキスト</span><span class="k">誰が・どの部門から聞いているか</span></div>
+          <div class="box io"><span>「渋谷店の先月の退会率は？」（店舗長・渋谷店）</span></div>
         </div>
         <div class="conn"><i></i></div>
         <div class="step">
-          <div class="lane l-ont">オントロジー<small>ONT</small></div>
-          <div class="box"><span class="verb">1. 解釈する</span><span class="k">言葉を正式な概念に置き換え、質問の種類と時点を決める</span></div>
-          <div class="box io"><b>出力</b><span>概念 ID（アクティブ会員・退会・店舗）、種類＝数字、時点＝先月末</span></div>
+          <div class="lane l-app">アプリ / AI<small>① APP</small></div>
+          <div class="box"><span class="verb">① 受け取る</span><span class="k">プロンプトとユーザーコンテキストを、オントロジーに値として渡す</span><span class="pk">ポリシー：このエージェントを使ってよい人か</span></div>
+          <div class="box io"><b>出力</b><span>質問者＝店舗長、部門＝渋谷店</span></div>
         </div>
         <div class="conn"><i></i></div>
         <div class="step">
-          <div class="lane l-sem">セマンティック<small>SEM</small></div>
-          <div class="box"><span class="verb">2. 数え方を選ぶ</span><span class="k">定義済みの指標と切り口から選ぶ</span></div>
-          <div class="box io"><b>出力</b><span>指標＝退会率、切り口＝店舗、期間＝先月</span></div>
+          <div class="lane l-ont">オントロジー<small>② ONT</small></div>
+          <div class="box"><span class="verb">② 解釈する</span><span class="k">言葉を正式な概念に置き換え、質問の種類と時点を決める（語彙 → 構造 → 状態と事象 → ルール → アクション）</span><span class="pk">ポリシー：実行してよいアクションか、AI に任せてよいか</span></div>
+          <div class="box io"><b>出力</b><span>概念 ID（退会・店舗）、種類＝数字、時点＝先月末</span></div>
         </div>
         <div class="conn"><i></i></div>
         <div class="step">
-          <div class="lane l-pol">ポリシー<small>POL</small></div>
-          <div class="box"><span class="verb">3. 範囲を絞る</span><span class="k">質問した人の権限を、AI がそのまま引き継ぐ</span></div>
-          <div class="box io"><b>出力</b><span>店舗長なので渋谷店のみ取得可</span></div>
+          <div class="lane l-sem">セマンティック<small>③ SEM</small></div>
+          <div class="box"><span class="verb">③ 数え方を選ぶ</span><span class="k">定義済みの指標と切り口から選ぶ</span><span class="pk">ポリシー：返してよい範囲（行・列）だけ</span></div>
+          <div class="box io"><b>出力</b><span>指標＝退会率、切り口＝店舗、期間＝先月。渋谷店の範囲だけ</span></div>
         </div>
         <div class="conn"><i></i></div>
         <div class="step">
-          <div class="lane l-dat">データ<small>DAT</small></div>
-          <div class="box"><span class="verb">4. 取得する</span><span class="k">値と一緒に、鮮度と品質の情報も受け取る</span></div>
+          <div class="lane l-dat">データ<small>④ DAT</small></div>
+          <div class="box"><span class="verb">④ 取得する</span><span class="k">値と一緒に、鮮度と品質の情報も受け取る</span><span class="pk">ポリシー：保存・取得時の制限、マスキング</span></div>
           <div class="box io"><b>出力</b><span>退会率 3.1%、先月分は確定済み、品質エラー 0 件</span></div>
         </div>
-        <div class="conn"><i></i></div>
+        <div class="conn up"><i></i></div>
         <div class="step">
-          <div class="lane l-ans">回答<small>ANS</small></div>
-          <div class="box"><span class="verb">5. 説明する</span><span class="k">オントロジーの言葉で説明し、データの注意点を添える</span></div>
-          <div class="box io"><span>「先月の渋谷店の退会率は 3.1% です。先月末に確定した退会を、月初の在籍会員（休会を除く）で割っています」</span></div>
+          <div class="lane l-app">アプリ / AI<small>⑤ APP</small></div>
+          <div class="box"><span class="verb">⑤ 回答する</span><span class="k">結果を逆向きにたどり、オントロジーの言葉で説明して見せる</span><span class="pk">ポリシー：見せてよい形か</span></div>
+          <div class="box io"><span>「先月末に確定した退会を、月初の在籍会員（休会を除く）で割ると 3.1% です」</span></div>
         </div>
       </div>
+      <div class="prail" aria-hidden="true"><span>ポリシー（横断）</span></div>
     </div>
-    <div class="legend"><span><span class="dash"></span>戻り道：オントロジーの言葉で説明できなければ、どこかの定義が足りないサイン</span></div>
+    <div class="legend">
+      <span><span class="dash"></span>戻り道：オントロジーの言葉で説明できなければ、どこかの定義が足りないサイン</span>
+      <span><span class="pd"></span>ポリシーは特定の層ではなく、4つの層すべてで効く</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>ポリシーが各層でやること</h2>
+    <p>ポリシーはルールとして1か所で定義し、4つの層それぞれで同じルールを適用します。プロンプトで「見せないで」と頼むことは、ポリシーの代わりになりません。</p>
+    <div class="pgrid">
+      <div class="pcard" style="--c:var(--app)"><b>アプリ / AI</b><span>誰がどのエージェント・ツールを使えるか</span><em>例：スタッフは声かけ文面の生成エージェントを使える</em></div>
+      <div class="pcard" style="--c:var(--ont)"><b>オントロジー</b><span>どのアクションを実行できるか、AI に任せてよいか</span><em>例：休会の申請は、AI は人の確認後のみ</em></div>
+      <div class="pcard" style="--c:var(--sem)"><b>セマンティック</b><span>指標をどの範囲（行・列）で返すか</span><em>例：店舗長には自店舗の行だけ</em></div>
+      <div class="pcard" style="--c:var(--dat)"><b>データ</b><span>保存・取得の時点での制限</span><em>例：電話番号は AI には常にマスク</em></div>
+    </div>
   </section>
 
   <section>
     <h2>質問の種類で、通る層が変わる</h2>
-    <p>AI は毎回すべての層を通るわけではありません。1件の判定や操作は集合を計算しないので、セマンティック層を通りません。権限（ポリシー）は、値に触れるすべての経路で通ります。</p>
+    <p>AI は毎回すべての層を通るわけではありません。1件の判定や操作は集合を数えないのでセマンティック層を通らず、定義だけを聞く質問はデータ層まで行きません。ポリシーは、通るすべての層で効きます。</p>
     <div class="tw"><table>
-      <thead><tr><th>質問の種類</th><th>1. 解釈<br>ONT</th><th>2. 数え方<br>SEM</th><th>3. 範囲<br>POL</th><th>4. 取得<br>DAT</th><th>5. 説明<br>ANS</th></tr></thead>
+      <thead><tr><th>質問の種類</th><th>① 受け取る<br>APP</th><th>② 解釈<br>ONT</th><th>③ 数え方<br>SEM</th><th>④ 取得<br>DAT</th></tr></thead>
       <tbody>
-        <tr><td>定義を聞く<span class="ex">アクティブ会員って何？</span></td><td><span class="dot d-ont"></span></td><td class="skip">—</td><td class="skip">—</td><td class="skip">—</td><td><span class="dot d-ans"></span></td></tr>
-        <tr><td>1件を聞く<span class="ex">山田さんは今月退会できる？</span></td><td><span class="dot d-ont"></span></td><td class="skip">—</td><td><span class="dot d-pol"></span></td><td><span class="dot d-dat"></span></td><td><span class="dot d-ans"></span></td></tr>
-        <tr><td>数字を聞く<span class="ex">先月の退会率は？</span></td><td><span class="dot d-ont"></span></td><td><span class="dot d-sem"></span></td><td><span class="dot d-pol"></span></td><td><span class="dot d-dat"></span></td><td><span class="dot d-ans"></span></td></tr>
-        <tr><td>理由を聞く<span class="ex">なぜ退会率が上がった？</span></td><td><span class="dot d-ont"></span></td><td><span class="dot d-sem"></span></td><td><span class="dot d-pol"></span></td><td><span class="dot d-dat"></span></td><td><span class="dot d-ans"></span></td></tr>
-        <tr><td>操作を頼む<span class="ex">この会員を休会にして</span></td><td><span class="dot d-ont"></span></td><td class="skip">—</td><td><span class="dot d-pol"></span></td><td><span class="dot d-dat"></span></td><td><span class="dot d-ans"></span></td></tr>
+        <tr><td>定義を聞く<span class="ex">アクティブ会員って何？</span></td><td><span class="dot d-app"></span></td><td><span class="dot d-ont"></span></td><td class="skip">—</td><td class="skip">—</td></tr>
+        <tr><td>1件を聞く<span class="ex">山田さんは今月退会できる？</span></td><td><span class="dot d-app"></span></td><td><span class="dot d-ont"></span></td><td class="skip">—</td><td><span class="dot d-dat"></span></td></tr>
+        <tr><td>数字を聞く<span class="ex">先月の退会率は？</span></td><td><span class="dot d-app"></span></td><td><span class="dot d-ont"></span></td><td><span class="dot d-sem"></span></td><td><span class="dot d-dat"></span></td></tr>
+        <tr><td>理由を聞く<span class="ex">なぜ退会率が上がった？</span></td><td><span class="dot d-app"></span></td><td><span class="dot d-ont"></span></td><td><span class="dot d-sem"></span></td><td><span class="dot d-dat"></span></td></tr>
+        <tr><td>操作を頼む<span class="ex">この会員を休会にして</span></td><td><span class="dot d-app"></span></td><td><span class="dot d-ont"></span></td><td class="skip">—</td><td><span class="dot d-dat"></span></td></tr>
       </tbody>
     </table></div>
-    <p class="muted" style="font-size:13.5px">「理由を聞く」は、数字を切り口ごとに分解したうえで、オントロジーの事象（入館の減少、退会申請など）の言葉で説明します。「操作を頼む」は、オントロジーのアクション定義で AI に許可されているか（自動 / 人の確認後 / 禁止）を確かめてから書き込みます。</p>
+    <p class="muted" style="font-size:13.5px">「理由を聞く」は、数字を切り口ごとに分解したうえで、オントロジーの事象（入館の減少、退会申請など）の言葉で説明します。「操作を頼む」は、オントロジーのアクション定義で前提条件を確かめ、ポリシーで AI が実行してよいか（自動 / 人の確認後 / 禁止）を確認してから書き込みます。</p>
   </section>
 
   <section>
     <h2>各段階で AI が守ること</h2>
-    <p>それぞれの層について、AI がしてよいこと・してはいけないことを1つずつ決めておくと、AI の振る舞いが揃います。</p>
+    <p>それぞれの段階について、AI がしてよいこと・してはいけないことを1つずつ決めておくと、AI の振る舞いが揃います。</p>
     <div class="rules">
+      <div class="rule" style="--c:var(--app)">
+        <h3>① 受け取る：アプリ / AI</h3>
+        <div class="do">ユーザーコンテキストを値としてオントロジーに渡す</div>
+        <div class="dont">業務の定義やルールをプロンプトに書く</div>
+        <div class="why">プロンプトに書いた定義は、エージェントごとにずれていきます。</div>
+      </div>
       <div class="rule" style="--c:var(--ont)">
-        <h3>1. 解釈：オントロジー</h3>
-        <div class="do">語彙を索引にして、関係する部分だけ取り出す</div>
+        <h3>② 解釈する：オントロジー</h3>
+        <div class="do">語彙を索引にして、関係する部分だけを取り出す</div>
         <div class="dont">オントロジー全体をプロンプトに入れる。意味を推測で補う</div>
         <div class="why">オントロジーは大きくなるため、全部を読ませると精度が落ちます。候補が複数あれば聞き返します。</div>
       </div>
       <div class="rule" style="--c:var(--sem)">
-        <h3>2. 数え方：セマンティック</h3>
+        <h3>③ 数え方を選ぶ：セマンティック</h3>
         <div class="do">定義済みの指標と切り口から選ぶ</div>
         <div class="dont">SQL や計算式をその場で書く</div>
         <div class="why">AI が式を書くと、同じ質問でも毎回違う数字になり得ます。定義にない質問には「未定義」と答え、新しい指標の案を出します。</div>
       </div>
-      <div class="rule" style="--c:var(--pol)">
-        <h3>3. 範囲：ポリシー</h3>
-        <div class="do">取得の時点で権限を強制する</div>
-        <div class="dont">「見せないで」とプロンプトでお願いする</div>
-        <div class="why">プロンプトでの指示は破られることがあります。見てはいけない値は、そもそも AI に渡らないようにします。</div>
-      </div>
       <div class="rule" style="--c:var(--dat)">
-        <h3>4. 取得：データ</h3>
+        <h3>④ 取得する：データ</h3>
         <div class="do">値と、いつ時点か・欠損や品質エラーをセットで受け取る</div>
         <div class="dont">値だけを受け取って答える</div>
         <div class="why">鮮度を知らない AI は、古い数字を自信を持って答えてしまいます。</div>
       </div>
-      <div class="rule" style="--c:var(--ans)">
-        <h3>5. 説明：回答</h3>
+      <div class="rule" style="--c:var(--app)">
+        <h3>⑤ 回答する：アプリ / AI</h3>
         <div class="do">オントロジーの言葉で説明し、使った定義と注意点を示す</div>
         <div class="dont">定義に出てこない言葉で、もっともらしく説明する</div>
         <div class="why">説明できないときは、無理に答えず「定義の穴」として記録します。</div>
+      </div>
+      <div class="rule" style="--c:var(--pol)">
+        <h3>全段階：ポリシー</h3>
+        <div class="do">各層でポリシーを強制する</div>
+        <div class="dont">「見せないで」とプロンプトでお願いする</div>
+        <div class="why">プロンプトでの指示は破られることがあります。見てはいけない値は、そもそも AI に渡らないようにします。</div>
       </div>
     </div>
   </section>
@@ -211,7 +245,7 @@ td .ex{display:block;font-size:12.5px;color:var(--muted)}
     <div class="fb">
       <div class="n"><b>質問</b><span>「アクティブ会員の退会率は？」</span></div>
       <div class="a">→</div>
-      <div class="n warn"><b>詰まる</b><span>いつ時点でアクティブだった人か、定義がない</span></div>
+      <div class="n warn"><b>詰まる</b><span>いつ時点でアクティブか、定義がない</span></div>
       <div class="a">→</div>
       <div class="n"><b>仮の回答</b><span>既定の時点で答え、その前提を明記する</span></div>
       <div class="a">→</div>
@@ -221,5 +255,6 @@ td .ex{display:block;font-size:12.5px;color:var(--muted)}
     </div>
   </section>
 </main>
+
 </body>
 </html>

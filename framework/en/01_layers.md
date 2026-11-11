@@ -1,33 +1,52 @@
-# 01. The four layers
+# 01. The four layers and the cross-cutting policy
 
-> Defines the four layers that requirements are placed into, and what each layer owns and does not own. When in doubt, come back to this table and ask "is this really this layer's responsibility?"
+> Defines the four layers that requirements are placed into, and the policy that cuts across all of them. The order of the layers is **the order in which AI processes a prompt**. When in doubt, come back to this table and ask "is this really this layer's responsibility?"
 
 ## Overview
 
 ```mermaid
 flowchart TB
-  APP["App / AI layer<br/>presentation, interaction, prompts, agent behavior"]
-  SEM["Semantic layer<br/>metric definitions, dimensions, grain"]
-  ONT["Ontology layer<br/>business concepts, relationships, states, rules"]
-  DAT["Data layer<br/>sources, ingestion, quality, freshness, retention"]
-  APP --> SEM --> ONT
-  ONT -. stored as .-> DAT
-  SEM -. computed from .-> DAT
-  POL["Policy (cross-cutting)<br/>who may see what"] -. applied on every path .-> DAT
+  U([Prompt + user context]) --> APP
+  APP["1. App / AI layer<br/>receive, present, behave"]
+  ONT["2. Ontology layer<br/>business concepts, relationships, states, rules, actions"]
+  SEM["3. Semantic layer<br/>metric definitions, dimensions, grain"]
+  DAT["4. Data layer<br/>sources, ingestion, quality, freshness, retention"]
+  APP --> ONT --> SEM --> DAT
+  DAT -. values .-> SEM -. results .-> ONT -. results with meaning .-> APP
+  POL["Policy (cross-cutting)<br/>who may see and do what"]
+  POL -.- APP
+  POL -.- ONT
+  POL -.- SEM
+  POL -.- DAT
 ```
 
-**Policy** (who may see what) is a cross-cutting rule, separate from the four layers. Some processing, such as a single-record lookup, never passes through the semantic layer, so access is not placed in any one layer; it is applied on every path that touches data.
+When an AI receives a prompt, it works down the layers: **receive (app / AI) → settle the meaning (ontology) → choose how to count (semantic) → fetch values (data)**, then follows the results back up to answer.
 
-Upper layers only *use* the layers below them; they never redefine what those layers mean. Meaning and rules go into **the lowest layer that everyone who needs them can reach**.
+- Meaning is settled before counting, so the ontology is read before the semantic layer. Semantic-layer metrics only count the ontology's concepts; they never invent new ones.
+- Processing that needs no counting, such as a single-record check or an operation, skips the semantic layer (see [07 How AI processes a prompt](07_ai-processing-flow.md)).
+- **Policy** (who may see and do what) is not placed in any one layer; it is enforced in all four.
+
+Each meaning and each way of counting lives in exactly one place that everyone who needs it can reach; other layers only reference it.
 
 ## Layer definitions
 
 | Layer | In one phrase | Owns | Does not own | Typical implementation |
 |---|---|---|---|---|
+| App / AI | Who sees what, how, and what it does | Screens, reports, notifications, workflows, AI prompts and tools, receiving the user context (who, which department), UX defaults and sort orders | Business rules and metric definitions (if written here they drift from other consumers) | Web apps, BI dashboards, chat UIs, AI agents |
 | Ontology | The business's things, relationships and rules | Entities (customer, contract, product), relationships (a customer has many contracts), states and transitions (contract: applied → active → cancelled), business rules (cancellations close at month end), the official meaning of terms | Calculation formulas, display labels, quirks of source systems | Conceptual model, knowledge graph, domain model, glossary, master data definitions |
 | Semantic | The definition of the numbers | Metric formulas (revenue, churn rate), dimensions, grain, period definitions (fiscal or calendar month) | The definition of business concepts themselves, screen layout | Metrics layer, dbt semantic models, BI data models, metric catalog |
 | Data | Where data comes from and how good it is | Source systems, ingestion method and frequency, data quality rules (missing, duplicate, inconsistent), history handling, retention, lineage | The meaning of metrics, business rule decisions | Data warehouse / lake, ETL / ELT, data quality checks, data catalog |
-| App / AI | Who sees what, how, and what it does | Screens, reports, notifications, workflows, AI prompts and tools, agent permissions, UX defaults and sort orders | Business rules and metric definitions (if written here they drift from other consumers) | Web apps, BI dashboards, chat UIs, AI agents |
+
+### What the policy does in each layer
+
+| Layer | Where the policy applies | Example |
+|---|---|---|
+| App / AI | Who may use which agents and tools | Location staff may use the outreach-message agent |
+| Ontology | Which actions may be run, and whether AI may run them | AI may submit a pause request only after a person confirms |
+| Semantic | Which scope (rows and columns) a metric is returned for | A location manager gets only their own location's numbers |
+| Data | Restrictions at storage and fetch time | Phone numbers are always masked before reaching AI |
+
+Define each policy rule once, and apply the same rule in all four layers. Asking "please don't show this" in a prompt is not a substitute for policy.
 
 ## Why this matters more with AI
 
@@ -42,7 +61,7 @@ Upper layers only *use* the layers below them; they never redefine what those la
 | T1: Can it be answered for a **single** record? | Ontology | Go to T2 | "Is this member active?" → ontology |
 | T2: Is it a calculation or aggregation over a **set**? | Semantic | Go to T3 | "Active rate = active members ÷ enrolled members" → semantic |
 | T3: Would it **change** if the system were replaced? | Data | Go to T4 | "Check-ins are in the entry system's checkin table" → data |
-| T4: Is it about who may **see** what? | Policy (cross-cutting) | App / AI layer | "Location managers see only their own location's members" → policy |
+| T4: Is it about who may **see or do** what? | Policy (cross-cutting) | App / AI layer | "Location managers see only their own location's members" → policy |
 
 T1 separates **classifications that can be decided one record at a time (ontology)** from **the result of counting them (semantic)**. The semantic layer then never invents new concepts; it only counts the ontology's concepts.
 
@@ -52,6 +71,7 @@ Even with the layers separated, AI gets lost if the joins are undefined. Require
 
 | Join | Required reference | Symptom when missing |
 |---|---|---|
+| App / AI → ontology | Pass the user context (who, which department) as values of ontology concepts | Department-specific definitions are ignored and answers use another department's standard |
 | Semantic → ontology | Every metric names the concept ID it counts, and the state and rule IDs it uses | Metrics carry their own embedded conditions and duplicate the concept's definition |
 | Data → ontology | Every entity is mapped to the source ID that makes it unique (the matching key) | The same member is counted as two people |
 | Data → semantic | Every metric is mapped to its source tables and columns, and their freshness (as of when) | AI answers "this month" with stale data |

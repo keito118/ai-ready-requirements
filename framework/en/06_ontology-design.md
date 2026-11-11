@@ -1,19 +1,19 @@
 # 06. Ontology design guide
 
-> The ontology is the broadest of the four layers, and it is the first layer an AI reads. This guide breaks the ontology down into five kinds of content and three tiers of scope, and defines the order in which AI should reference them and the fields each element must have. For the definition of the layer itself, see [01 The four layers](01_layers.md).
+> The ontology is the broadest of the four layers, and it is where the AI settles the meaning of a prompt received through the app / AI layer. This guide breaks the ontology down into five kinds of content and three tiers of scope, and defines the order in which AI should reference them and the fields each element must have. For the definition of the layer itself, see [01 The four layers and the cross-cutting policy](01_layers.md).
 
 ## 1. The ontology in AI processing
 
-When an AI handles a question or a request, it moves down the layers: ontology → semantic → data. The ontology's job is to **map the words in the question to official concepts, and settle the subject, the point in time, the constraints and the allowed operations**.
+When an AI receives a prompt, it works down the layers: app / AI → ontology → semantic → data. The ontology's job is to **map the words in the prompt to official concepts, and settle the subject, the point in time, the constraints and the allowed operations**. The policy applies in all four layers.
 
 ```mermaid
 flowchart LR
-  Q([Question or request]) --> O[Ontology<br/>what is this about, what may be done]
-  O --> S[Semantic<br/>how to count, who may see]
+  Q([Prompt + user context]) --> APP[App / AI<br/>receive]
+  APP --> O[Ontology<br/>what is this about, what may be done]
+  O --> S[Semantic<br/>how to count]
   S --> D[Data<br/>where it is, how fresh, how correct]
-  D --> A([Answer or action])
   O -. definitions, single-record checks and<br/>operations skip the semantic layer .-> D
-  A -. explanations use the ontology's terms .-> Q
+  D -. results returned in the ontology's terms .-> APP
 ```
 
 ## 2. Five kinds of content
@@ -78,8 +78,8 @@ The AI does not need to read all five elements every time.
 | Kind of question | Example | Elements read | Then |
 |---|---|---|---|
 | Asking for a definition | "What is an active member?" | VOC → STR (→ RUL) | Answer directly |
-| Asking about one record | "Can Yamada cancel this month?" | VOC → RUL | Check access in the policy, then fetch the single record from the data layer. Skip the semantic layer |
-| Asking for a number | "What was the Shibuya location's churn rate last month?" | VOC → RUL | Semantic layer → policy → data layer |
+| Asking about one record | "Can Yamada cancel this month?" | VOC → RUL | Fetch the single record from the data layer. Skip the semantic layer |
+| Asking for a number | "What was the Shibuya location's churn rate last month?" | VOC → RUL | Semantic layer → data layer |
 | Asking why | "Why did churn go up?" | VOC → RUL, focusing on events | Break it down in the semantic layer → data layer → explain in terms of events |
 | Asking for an operation | "Pause this member's membership" | VOC → ACT | Write to the data layer. ACT decides whether a person must confirm first |
 
@@ -112,7 +112,7 @@ The AI does not need to read all five elements every time.
 | STA States | List of states, initial and final states, allowed transitions, **point-in-time definition** | Typical time per transition |
 | STA Events | When it is recorded, definition of its timestamp, the transitions it triggers | How cancellations of the event are handled |
 | RUL Rules | Kind (constraint / deadline / derived classification), subject, condition, exceptions, handling of violations (error / warning / human decision) | Reference to the data quality rule that detects violations |
-| ACT Actions | Performer (role), preconditions (STA and RUL IDs), result (state transition), **AI permission** (automatic / after human confirmation / forbidden) | Reversibility, approver, who is notified |
+| ACT Actions | Performer (role), preconditions (STA and RUL IDs), result (state transition), **AI permission** (automatic / after human confirmation / forbidden; applied as policy in every layer) | Reversibility, approver, who is notified |
 
 ### 5.3 Four fields that matter most for AI
 

@@ -2,7 +2,7 @@
 
 **English** | [日本語](README.ja.md)
 
-A framework for deciding, during requirements definition, **which layer each requirement belongs to**: the ontology, the semantic layer, the data layer, or the app / AI layer. Every document is available in English (`framework/en/`) and Japanese (`framework/ja/`), with the same structure and IDs in both.
+A framework for deciding, during requirements definition, **which layer each requirement belongs to**: the app / AI layer, the ontology, the semantic layer, the data layer, or the cross-cutting policy. Every document is available in English (`framework/en/`) and Japanese (`framework/ja/`), with the same structure and IDs in both.
 
 ## Why
 
@@ -19,20 +19,22 @@ flowchart LR
   OD[06 Ontology design] -. ONT details .-> M
 ```
 
-## The four layers
+## The four layers and the cross-cutting policy
 
-| Layer | Question it answers | Examples |
-|---|---|---|
-| Ontology | What is it? | Customer, contract, state transitions, business rules, official terms |
-| Semantic | How is it counted? | Metric formulas, dimensions, grain, period definitions |
-| Data | Where from, how fresh, how correct? | Sources, ingestion frequency, quality rules, retention |
-| App / AI | Who sees what, and how? | Screens, notifications, workflows, prompts, agent behavior |
+The layers are listed in the order an AI processes a prompt. The AI works down through them, then follows the results back up to answer.
 
-Access rules (who may see what) are a cross-cutting **policy**, not part of any one layer, so they apply on every path, including single-record lookups that never touch the semantic layer.
+| # | Layer | Question it answers | Examples |
+|---|---|---|---|
+| 1 | App / AI | Who is asking, and who sees what, how? | Screens, notifications, workflows, prompts, agent behavior, receiving the user context |
+| 2 | Ontology | What is it? | Customer, contract, state transitions, business rules, official terms |
+| 3 | Semantic | How is it counted? | Metric formulas, dimensions, grain, period definitions |
+| 4 | Data | Where from, how fresh, how correct? | Sources, ingestion frequency, quality rules, retention |
+
+The **policy** (who may see or do what) is not part of any one layer; it applies in all four. It controls which agents and tools can be used in the app / AI layer, which actions can be run in the ontology, which scope may be returned in the semantic layer, and masking in the data layer. Single-record checks and operations skip the semantic layer, so a policy placed in only one layer would leave a gap.
 
 ### Inside the ontology
 
-The ontology is the layer an AI reads first, so it is broken down further into five kinds of content, read in this order: **vocabulary → structure → states and events → rules → actions**. Each element can only reference the ones before it, and each has required fields, such as a point-in-time definition for states and an AI permission (automatic / after a person confirms / forbidden) for actions. See the [ontology design guide](framework/en/06_ontology-design.md).
+The ontology is the layer that settles what a prompt means, so it is broken down further into five kinds of content, read in this order: **vocabulary → structure → states and events → rules → actions**. Each element can only reference the ones before it, and each has required fields, such as a point-in-time definition for states and an AI permission (automatic / after a person confirms / forbidden) for actions. See the [ontology design guide](framework/en/06_ontology-design.md).
 
 ## The five criteria
 
@@ -50,13 +52,13 @@ When the layer is unclear, score the requirement from 1 to 3 on each criterion. 
 
 | # | English | Japanese | Contents |
 |---|---|---|---|
-| 01 | [The four layers](framework/en/01_layers.md) | [4つのレイヤー](framework/ja/01_layers.md) | What each layer owns and does not own, three tests for the boundaries, contracts between layers |
+| 01 | [The four layers and the cross-cutting policy](framework/en/01_layers.md) | [4つのレイヤーと横断ポリシー](framework/ja/01_layers.md) | What each layer owns and does not own, what the policy does in each layer, tests for the boundaries, contracts between layers |
 | 02 | [Placement criteria](framework/en/02_decision-criteria.md) | [振り分けの判断基準](framework/ja/02_decision-criteria.md) | Principles, decision flow, five scoring criteria, common misplacements |
 | 03 | [Interview guide](framework/en/03_interview-guide.md) | [ヒアリングガイド](framework/ja/03_interview-guide.md) | Questions per layer, and signals to watch for in interviews |
 | 04 | [Placement matrix](framework/en/04_placement-matrix.md) | [振り分けマトリクス](framework/ja/04_placement-matrix.md) | Template for recording each requirement, its layer, scores and reason |
 | 05 | [Worked example](framework/en/05_worked-example.md) | [記入例](framework/ja/05_worked-example.md) | Membership churn at a fictional fitness chain, from five requests to twelve placed requirements, and how an AI walks through them |
 | 06 | [Ontology design guide](framework/en/06_ontology-design.md) | [オントロジー設計ガイド](framework/ja/06_ontology-design.md) | Five kinds of ontology content and three tiers of scope, the order AI reads them in, and required fields |
-| 07 | [How AI processes a question](framework/en/07_ai-processing-flow.md) | [AI が質問を処理する流れ](framework/ja/07_ai-processing-flow.md) | The five steps from question to answer, routes by kind of question, rules for each step, and the feedback loop. Illustrated HTML version: [docs/ai-processing-flow.html](docs/ai-processing-flow.html) |
+| 07 | [How AI processes a prompt](framework/en/07_ai-processing-flow.md) | [AI がプロンプトを処理する流れ](framework/ja/07_ai-processing-flow.md) | The five steps from prompt to answer, routes by kind of question, rules for each step, and the feedback loop. Illustrated HTML version: [docs/ai-processing-flow.html](docs/ai-processing-flow.html) |
 
 ## Usage
 

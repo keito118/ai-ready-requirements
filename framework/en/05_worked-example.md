@@ -31,7 +31,7 @@
 
 ## 3. How the AI walks through it
 
-> Following the reference order of the [06 Ontology design guide](06_ontology-design.md), this section traces how the AI handles real questions.
+> Following the processing order in [07 How AI processes a prompt](07_ai-processing-flow.md) (app / AI → ontology → semantic → data), and the reference order inside the ontology from the [06 Ontology design guide](06_ontology-design.md), this section traces how the AI handles real questions. The policy (POL-001) is checked in each layer.
 
 ### 3.1 Ontology elements and scope
 
@@ -48,13 +48,14 @@
 
 | Step | References | What the AI settled |
 |---|---|---|
+| App / AI: receive | APP-002, POL-001 | Asker = Shibuya location manager, who may use the explanation AI |
 | VOC | "Active member" → ONT-001, "churn" → cancelled state in ONT-002, "Shibuya location" → location | Every word mapped to an official concept |
 | STR | Member — contract — location | Shibuya members = members with a contract at Shibuya |
 | STA | ONT-002, cancellation request and check-in events | Members who became cancelled as of the end of last month |
 | RUL | ONT-003, ONT-001 | "Last month's cancellations" = cancellations confirmed at the end of last month. But **as of when a member had to be active** is not defined |
-| Semantic / policy | SEM-001, POL-001 | The manager may see Shibuya only; no problem |
+| Semantic | SEM-001, POL-001 | Count churn by location for last month. POL-001 limits the result to Shibuya |
 | Data | DAT-001, DAT-002 | Last month is final, no quality errors |
-| Answer | Explained in terms of events | For example: "Most members who cancelled last month checked in twice a month or less in the two months before" |
+| App / AI: answer | Explained in terms of events | For example: "Most members who cancelled last month checked in twice a month or less in the two months before" |
 
 Because the point in time for ONT-001 is undefined, the AI uses the default (end of the previous day) and says so in its answer. This goes on the open issues list for the business owner.
 
@@ -62,6 +63,7 @@ Because the point in time for ONT-001 is undefined, the AI uses the default (end
 
 | Step | References | What the AI settled |
 |---|---|---|
+| App / AI: receive | POL-001 | Asker = location staff; the member belongs to their own location |
 | VOC → STA | Member, ONT-002 | The member is currently enrolled |
 | RUL | Pauses are monthly, requested by the 20th of the previous month | After the 20th, the pause starts the month after next |
 | ACT | ONT-004 | Preconditions met. AI permission is "after a person confirms", so the AI drafts the request and waits for staff to confirm |
