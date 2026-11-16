@@ -6,9 +6,9 @@ A framework for deciding, during requirements definition, **which layer each req
 
 ## Why
 
-As AI automates more of the work, the effort that goes into development keeps shrinking. But to have AI build and run systems, it has to learn the business more precisely than ever. People can fill gaps with unstated assumptions and context; AI knows only what is written down.
+As AI automates more of the work, the effort that goes into development keeps shrinking. At the same time, to have AI build and run systems, it has to learn the business more precisely than ever. People can fill gaps with unstated assumptions and context; AI knows only what is written down.
 
-So requirements must be made clear before development starts. That means interviewing the business in more depth, and then deciding where each piece of business meaning lives. As a result, requirements definition takes up a larger share of the whole effort.
+That is why requirements must be made clear before development starts. It is not enough to interview the business in more depth; you also have to decide where each piece of business meaning lives. With less development effort and more requirements work, requirements definition takes up a growing share of the whole.
 
 Without a decision on placement, when a business rule ends up in a prompt, or a metric is defined inside a dashboard, every new screen and every new agent gets its own copy, and the answers start to disagree.
 
