@@ -76,7 +76,7 @@ flowchart LR
 3. 要望を層ごとに分割し、[判断フローと指標](framework/ja/02_decision-criteria.md) で1件ずつ振り分けます。
 4. すべての振り分けに点数と理由を記録し、マトリクス末尾のチェックリストで確認します。
 
-`REQ-` や各層の ID は、[doc-templates](https://github.com/keito118/doc-templates) の `FR-` などの要件定義書の ID と併用できます。「関連 ID」欄で紐づけてください。
+`REQ-` や各層の ID は、既存の要件定義書の ID（機能要件の `FR-` など）と併用できます。「関連 ID」欄で紐づけてください。
 
 ## ライセンス
 

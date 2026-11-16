@@ -76,7 +76,7 @@ When the layer is unclear, score the requirement from 1 to 3 on each criterion. 
 3. Split each request by layer, and place each part using the [decision flow and criteria](framework/en/02_decision-criteria.md).
 4. Record the scores and the reason for every placement, then go through the checklist at the end of the matrix.
 
-The `REQ-` and layer IDs can sit alongside a requirements definition such as the `FR-` IDs in [doc-templates](https://github.com/keito118/doc-templates): use the "Related ID" column to link them.
+The `REQ-` and layer IDs can sit alongside a requirements definition such as functional requirement `FR-` IDs: use the "Related ID" column to link them.
 
 ## License
 

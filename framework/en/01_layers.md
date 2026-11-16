@@ -52,9 +52,9 @@ Define each policy rule once, and apply the same rule in all four layers. Asking
 
 - **AI believes what it is told.** If "churn rate" is defined once in a dashboard and again in a prompt, a person can reconcile them from context; an AI cannot, and the answers diverge.
 - **Cheaper implementation multiplies misplacement.** When apps are fast to build, copies of the same rule spread into screens, prompts and batch jobs.
-- **The lower layers become the shared language for AI.** With a solid ontology and semantic layer, each new agent or dashboard does not have to redefine the business from scratch.
+- **The ontology and the semantic layer become the shared language for AI.** With a solid ontology and semantic layer, each new agent or dashboard does not have to redefine the business from scratch.
 
-## Three tests for the boundaries
+## Four tests for the boundaries
 
 | Test | If yes | If no | Example |
 |---|---|---|---|

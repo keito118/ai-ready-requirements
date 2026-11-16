@@ -4,9 +4,9 @@
 
 ## Principles
 
-1. **Put meaning in the lowest layer that everyone who shares it can reach.** Upper layers only reference the layers below.
+1. **Put meaning and ways of counting in the shared layers (the ontology and the semantic layer).** The app / AI layer only references them.
 2. **Write each rule in exactly one place.** If the same definition appears in two layers, one of them is wrong.
-3. **Keep upper layers fast to change.** Putting frequently changing things low makes every change ripple through everything.
+3. **Keep the app / AI layer fast to change.** Putting frequently changing things in the shared layers makes every change ripple through everything.
 4. **Anything you want AI to interpret belongs in a definition, not a prompt.** The prompt should only say which definition to use.
 
 ## Decision flow
@@ -15,25 +15,28 @@
 flowchart TD
   S([Write the requirement as one sentence]) --> SPLIT{Does it mix<br/>several layers?}
   SPLIT -- Yes --> DIV[Split it by layer and<br/>place each part from the start] --> S
-  SPLIT -- No --> Q1{"What is it?<br/>A concept, relationship,<br/>state or business rule?"}
+  SPLIT -- No --> Q1{"Q1 What is it?<br/>A concept, relationship, state<br/>or rule decided per record?"}
   Q1 -- Yes --> ONT[Ontology]
-  Q1 -- No --> Q2{"How is it counted?<br/>A metric formula, dimension,<br/>or grain?"}
+  Q1 -- No --> Q2{"Q2 How is it counted?<br/>A calculation, dimension<br/>or grain over a set?"}
   Q2 -- Yes --> SEM[Semantic]
-  Q2 -- No --> Q3{"Where from, how fresh, how correct?<br/>Source, freshness or quality?"}
+  Q2 -- No --> Q3{"Q3 Where from, how fresh, how correct?<br/>Source, freshness or quality?"}
   Q3 -- Yes --> DAT[Data]
-  Q3 -- No --> APP[App / AI]
-  ONT & SEM & DAT & APP --> CHK{Do the five criteria<br/>agree with the result?}
+  Q3 -- No --> Q4{"Q4 Who may see<br/>or do what?"}
+  Q4 -- Yes --> POL["Policy (cross-cutting)"]
+  Q4 -- No --> APP[App / AI]
+  ONT & SEM & APP --> CHK{Do the five criteria<br/>agree with the result?}
+  DAT & POL --> OK
   CHK -- No --> REV[Re-decide using the total score<br/>and record the reason in the matrix]
   CHK -- Yes --> OK([Confirmed])
 ```
 
 ## The five criteria
 
-The decision flow places a requirement by **what kind** of statement it is. The five criteria answer a separate question: **should this become a shared definition lower down, or may it stay inside one app?** In practice this is where most arguments happen (for example, is an alert threshold a screen setting or a company-wide standard?).
+Q1–Q4 of the decision flow are the same as the [four tests in 01](01_layers.md#four-tests-for-the-boundaries), and place a requirement by **what kind** of statement it is. The five criteria answer a separate question: **should this become a shared definition, or may it stay inside one app?** In practice this is where most arguments happen (for example, is an alert threshold a screen setting or a company-wide standard?).
 
-Score each criterion from 1 to 3. The data layer is about supply rather than meaning, so requirements that match Q3 are placed there without scoring.
+Score each criterion from 1 to 3. The data layer is about supply rather than meaning, and policy is a fixed kind of statement, so requirements that match Q3 or Q4 are placed there and the score does not move them (you may still score policy to show its priority).
 
-| Criterion | Question | 1 (toward upper layer) | 2 | 3 (toward lower layer) |
+| Criterion | Question | 1 (toward the app / AI layer) | 2 | 3 (toward a shared definition) |
 |---|---|---|---|---|
 | Reuse scope | Who uses this definition? | One screen or one agent | One department, several screens | Across departments, company-wide |
 | Impact of drift | What happens if people define it differently? | Things look slightly different | Wrong decisions, rework | Errors in money, contracts, compliance or external reporting |
@@ -52,7 +55,7 @@ When the flow and the score disagree:
 
 | Flow result | Score | What to do |
 |---|---|---|
-| App / AI | 9 or more | Push it down. Example: if an alert threshold is also the board's standard, define it as part of a metric in the semantic layer |
+| App / AI | 9 or more | Make it a shared definition. Example: if an alert threshold is also the board's standard, define it as part of a metric in the semantic layer |
 | Ontology or semantic | 8 or less | It may stay in the app / AI layer. Example: a temporary campaign category used by a single screen |
 
 > The score is a tool for aligning the discussion. For requirements around 8–9 points, let "impact of drift" decide rather than the score, and record the reason in the matrix.
