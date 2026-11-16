@@ -8,7 +8,9 @@ A framework for deciding, during requirements definition, **which layer each req
 
 As AI automates more of the work, the effort that goes into development keeps shrinking. But to have AI build and run systems, it has to learn the business more precisely than ever. People can fill gaps with unstated assumptions and context; AI knows only what is written down.
 
-So requirements must be made clear before development starts. That means interviewing the business in more depth, and then deciding where each piece of business meaning lives. As a result, requirements definition takes up a larger share of the whole effort. When a business rule ends up in a prompt, or a metric is defined inside a dashboard, every new screen and every new agent gets its own copy, and the answers start to disagree.
+So requirements must be made clear before development starts. That means interviewing the business in more depth, and then deciding where each piece of business meaning lives. As a result, requirements definition takes up a larger share of the whole effort.
+
+Without a decision on placement, when a business rule ends up in a prompt, or a metric is defined inside a dashboard, every new screen and every new agent gets its own copy, and the answers start to disagree.
 
 This framework fixes the placement criteria in advance, so that interviews, placement decisions and their reasons follow the same shape on every project. "AI-ready" means that every rule and definition lives in exactly one place that both people and AI can reference.
 
