@@ -12,7 +12,7 @@ flowchart LR
   APP --> O[Ontology<br/>what is this about, what may be done]
   O --> S[Semantic<br/>how to count]
   S --> D[Data<br/>where it is, how fresh, how correct]
-  O -. definitions, single-record checks and<br/>operations skip the semantic layer .-> D
+  O -. only writes from operations go<br/>from the action definition to data .-> D
   D -. results returned in the ontology's terms .-> APP
 ```
 
@@ -78,12 +78,27 @@ The AI does not need to read all five elements every time.
 | Kind of question | Example | Elements read | Then |
 |---|---|---|---|
 | Asking for a definition | "What is an active member?" | VOC → STR (→ RUL) | Answer directly |
-| Asking about one record | "Can Yamada cancel this month?" | VOC → RUL | Fetch the single record from the data layer. Skip the semantic layer |
+| Asking about one record | "Can Yamada cancel this month?" | VOC → RUL | Count the values the check needs in the semantic layer and fetch them from the data layer. The check itself is made with the rule |
 | Asking for a number | "What was the Shibuya location's churn rate last month?" | VOC → RUL | Semantic layer → data layer |
 | Asking why | "Why did churn go up?" | VOC → RUL, focusing on events | Break it down in the semantic layer → data layer → explain in terms of events |
-| Asking for an operation | "Pause this member's membership" | VOC → ACT | Write to the data layer. ACT decides whether a person must confirm first |
+| Asking for an operation | "Pause this member's membership" | VOC → ACT | Write to the data layer (the semantic layer is read-only, so it is skipped). ACT decides whether a person must confirm first |
 
-**Single-record checks do not go through the semantic layer.** The semantic layer computes over sets, so a decision about one record is made directly with the ontology's rules. Substituting a metric here leads to mismatches such as "cancelled in the totals, but enrolled on the member's own screen".
+**Even single-record checks get their values from the semantic layer.** The rule for the check (what makes a member active) lives in the ontology; how the values it uses are counted (check-ins in the last 14 days) lives in the semantic layer. Checking with a metric instead of the rule, or writing the count separately for each check, leads to mismatches such as "cancelled in the totals, but enrolled on the member's own screen".
+
+### 4.4 Going back, and when to stop
+
+The order is the direction of references, not a single pass. If the AI is reading a rule and needs to know what "enrolled" means, it may follow the ID in the rule back to the state. References always point to earlier elements, so going back never creates a loop. Interviews work the same way: if, while pinning down a rule, you find a term is not defined well enough, go back to the vocabulary and add it.
+
+Following references, however, has no natural end. The AI stops retrieving when any of the following applies.
+
+| Stop when | Meaning |
+|---|---|
+| Settled | Every item the kind of question needs (what 4.2 settles, within the range 4.3 reads) is filled |
+| Nothing new | Every reference leads only to definitions already retrieved |
+| Limit reached | A predefined limit on reference depth or count is reached. State any missing items as assumptions in the answer |
+| Not defined | The definition is not there. Do not guess; record it as a gap in the definitions (the way back in [07](07_ai-processing-flow.md)) |
+
+Set the actual limits to match how the AI platform you use retrieves information.
 
 ## 5. Required fields
 
@@ -127,7 +142,7 @@ The AI does not need to read all five elements every time.
 
 | Dilemma | How to handle it |
 |---|---|
-| Is a classification a rule, or a semantic-layer metric? | If it can be decided per record, it is a rule (RUL). If deciding it needs information about the whole set ("top 10% of members"), define it in the semantic layer and only reference it from the ontology |
+| Is a classification a rule, or a semantic-layer metric? | If it can be decided per record, it is a rule (RUL). If deciding it needs information about the whole set ("top 10% of members"), define it in the semantic layer and only reference it from the ontology. Even for per-record classifications, how the values used are counted lives in the semantic layer |
 | Departments use a word differently and will not unify | Do not override. Define separate concepts, link them in VOC, and let AI translate between them |
 | Where do the detailed steps of an approval workflow go? | Whose approval is required (a precondition) goes in ACT. The approval screen flow and notification text go in the app / AI layer |
 | Show past numbers with the definition at the time, or today's? | The ontology only records valid periods. Which one to use is decided per metric in the semantic layer |

@@ -6,18 +6,27 @@ A framework for deciding, during requirements definition, **which layer each req
 
 ## Why
 
-AI is making implementation cheaper, but it does not make requirements cheaper. As a share of the work, requirements definition grows: you need to understand the business in more depth, and you need to decide where each piece of meaning lives. When a business rule ends up in a prompt, or a metric is defined inside a dashboard, every new screen and every new agent gets its own copy, and the answers start to disagree.
+As AI automates more of the work, the effort that goes into development keeps shrinking. At the same time, to have AI build and run systems, it has to learn the business more precisely than ever. People can fill gaps with unstated assumptions and context; AI knows only what is written down.
+
+That is why requirements must be made clear before development starts. It is not enough to interview the business in more depth; you also have to decide where each piece of business meaning lives. With less development effort and more requirements work, requirements definition takes up a growing share of the whole.
+
+Without a decision on placement, when a business rule ends up in a prompt, or a metric is defined inside a dashboard, every new screen and every new agent gets its own copy, and the answers start to disagree.
 
 This framework fixes the placement criteria in advance, so that interviews, placement decisions and their reasons follow the same shape on every project. "AI-ready" means that every rule and definition lives in exactly one place that both people and AI can reference.
 
 ```mermaid
 flowchart LR
-  I[03 Interview guide] --> R[Original requests<br/>REQ-]
-  R --> F[02 Decision flow<br/>and five criteria]
-  F --> M[04 Placement matrix<br/>ONT- SEM- DAT- APP-]
-  L[01 Layer definitions] -. reference .-> F
-  OD[06 Ontology design] -. ONT details .-> M
+  A["AI builds and runs systems<br/>development effort falls"] --> B["AI knows only<br/>what is written down"]
+  B --> C["Make requirements clear<br/>before development"]
+  C --> C1["Interview the business<br/>in more depth"]
+  C --> C2["Decide where<br/>each meaning lives"]
+  C1 --> E["AI-ready<br/>people and AI reference<br/>the same definitions"]
+  C2 --> E
+  classDef fw fill:#e8f0fe,stroke:#3b6fd8,stroke-width:2px,color:#1c2230
+  class C1,C2 fw
 ```
+
+The two blue boxes are the work that grows in requirements definition, and this framework sets out how to do it.
 
 ## The four layers and the cross-cutting policy
 
@@ -27,10 +36,10 @@ The layers are listed in the order an AI processes a prompt. The AI works down t
 |---|---|---|---|
 | 1 | App / AI | Who is asking, and who sees what, how? | Screens, notifications, workflows, prompts, agent behavior, receiving the user context |
 | 2 | Ontology | What is it? | Customer, contract, state transitions, business rules, official terms |
-| 3 | Semantic | How is it counted? | Metric formulas, dimensions, grain, period definitions |
+| 3 | Semantic | How is it counted? | Metric formulas, how per-record values are counted, dimensions, grain, period definitions. The only entry point for reading data |
 | 4 | Data | Where from, how fresh, how correct? | Sources, ingestion frequency, quality rules, retention |
 
-The **policy** (who may see or do what) is not part of any one layer; it applies in all four. It controls which agents and tools can be used in the app / AI layer, which actions can be run in the ontology, which scope may be returned in the semantic layer, and masking in the data layer. Single-record checks and operations skip the semantic layer, so a policy placed in only one layer would leave a gap.
+The **policy** (who may see or do what) is not part of any one layer; it applies in all four. It controls which agents and tools can be used in the app / AI layer, which actions can be run in the ontology, which scope may be returned in the semantic layer, and masking in the data layer. Writes from operations skip the semantic layer, and some requests must be stopped at the agent or action stage, so a policy placed in only one layer would leave a gap.
 
 ### Inside the ontology
 

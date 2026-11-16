@@ -182,18 +182,18 @@ td .ex{display:block;font-size:12.5px;color:var(--muted)}
 
   <section>
     <h2>質問の種類で、通る層が変わる</h2>
-    <p>AI は毎回すべての層を通るわけではありません。1件の判定や操作は集合を数えないのでセマンティック層を通らず、定義だけを聞く質問はデータ層まで行きません。ポリシーは、通るすべての層で効きます。</p>
+    <p>データを読む質問は、1件の判定でも必ずセマンティック層を通ります。判定に使う値の数え方がそこにあるので、AI がその場でクエリを書かずに済みます。セマンティック層を通らないのは、定義だけを聞く質問と、操作の書き込み（セマンティック層は読み取り専用）だけです。ポリシーは、通るすべての層で効きます。</p>
     <div class="tw"><table>
       <thead><tr><th>質問の種類</th><th>① 受け取る<br>APP</th><th>② 解釈<br>ONT</th><th>③ 数え方<br>SEM</th><th>④ 取得<br>DAT</th></tr></thead>
       <tbody>
         <tr><td>定義を聞く<span class="ex">アクティブ会員って何？</span></td><td><span class="dot d-app"></span></td><td><span class="dot d-ont"></span></td><td class="skip">—</td><td class="skip">—</td></tr>
-        <tr><td>1件を聞く<span class="ex">山田さんは今月退会できる？</span></td><td><span class="dot d-app"></span></td><td><span class="dot d-ont"></span></td><td class="skip">—</td><td><span class="dot d-dat"></span></td></tr>
+        <tr><td>1件を聞く<span class="ex">山田さんは今月退会できる？</span></td><td><span class="dot d-app"></span></td><td><span class="dot d-ont"></span></td><td><span class="dot d-sem"></span></td><td><span class="dot d-dat"></span></td></tr>
         <tr><td>数字を聞く<span class="ex">先月の退会率は？</span></td><td><span class="dot d-app"></span></td><td><span class="dot d-ont"></span></td><td><span class="dot d-sem"></span></td><td><span class="dot d-dat"></span></td></tr>
         <tr><td>理由を聞く<span class="ex">なぜ退会率が上がった？</span></td><td><span class="dot d-app"></span></td><td><span class="dot d-ont"></span></td><td><span class="dot d-sem"></span></td><td><span class="dot d-dat"></span></td></tr>
         <tr><td>操作を頼む<span class="ex">この会員を休会にして</span></td><td><span class="dot d-app"></span></td><td><span class="dot d-ont"></span></td><td class="skip">—</td><td><span class="dot d-dat"></span></td></tr>
       </tbody>
     </table></div>
-    <p class="muted" style="font-size:13.5px">「理由を聞く」は、数字を切り口ごとに分解したうえで、オントロジーの事象（入館の減少、退会申請など）の言葉で説明します。「操作を頼む」は、オントロジーのアクション定義で前提条件を確かめ、ポリシーで AI が実行してよいか（自動 / 人の確認後 / 禁止）を確認してから書き込みます。</p>
+    <p class="muted" style="font-size:13.5px">「1件を聞く」は、判定のルールをオントロジーで確かめ、判定に使う値はセマンティック層を通して取ります。「理由を聞く」は、数字を切り口ごとに分解したうえで、オントロジーの事象（入館の減少、退会申請など）の言葉で説明します。「操作を頼む」は、オントロジーのアクション定義で前提条件を確かめ、ポリシーで AI が実行してよいか（自動 / 人の確認後 / 禁止）を確認してから書き込みます。</p>
   </section>
 
   <section>

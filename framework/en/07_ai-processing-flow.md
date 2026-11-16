@@ -28,16 +28,17 @@ flowchart TB
 
 ## 2. Routes by kind of question
 
-The AI does not pass through every layer every time. Single-record checks and operations do not count over a set, so they skip the semantic layer. Questions that only ask for a definition never reach the data layer. The policy applies in every layer the route passes through.
+Every question that reads data goes through the semantic layer, even a single-record check. The way to count the values it needs is defined there, so the AI never has to write a query on the spot. Only two kinds skip it: questions that only ask for a definition (they never reach the data layer), and writes from operations (the semantic layer is read-only). The policy applies in every layer the route passes through.
 
 | Kind of question | Example | 1. App / AI | 2. Ontology | 3. Semantic | 4. Data |
 |---|---|:-:|:-:|:-:|:-:|
 | Asking for a definition | What is an active member? | ● | ● | — | — |
-| Asking about one record | Can Yamada cancel this month? | ● | ● | — | ● |
+| Asking about one record | Can Yamada cancel this month? | ● | ● | ● | ● |
 | Asking for a number | What was last month's churn rate? | ● | ● | ● | ● |
 | Asking why | Why did churn go up? | ● | ● | ● | ● |
 | Asking for an operation | Pause this member's membership | ● | ● | — | ● |
 
+- **Asking about one record**: check the rule in the ontology, and fetch the values it needs (current state, request date and so on) through the semantic layer.
 - **Asking why**: break the number down by dimension, then explain it in terms of the ontology's events (fewer check-ins, cancellation requests).
 - **Asking for an operation**: check the preconditions in the ontology's action definition, then check in the policy whether AI may run it (automatic / after a person confirms / forbidden) before writing anything.
 

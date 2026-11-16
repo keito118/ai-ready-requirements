@@ -41,6 +41,7 @@
 | S-04 | How do you slice that number (by region, by owner...)? | Dimensions and grain |
 | S-05 | Do different departments report different numbers under the same name? | Split definitions: unify them, or separate them into differently named metrics |
 | S-06 | Who may see that number, and who must not? | Row- and column-level access (record it as policy). Confirm it also applies through AI |
+| S-07 | For per-record checks, how are the values counted (such as recent check-ins)? | How per-record values are counted. The rule goes in the ontology (RUL); how its values are counted goes in the semantic layer |
 
 ## 3. Data (sources, quality, freshness)
 
