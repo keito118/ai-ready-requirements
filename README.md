@@ -16,12 +16,23 @@ This framework fixes the placement criteria in advance, so that interviews, plac
 
 ```mermaid
 flowchart LR
-  I[03 Interview guide] --> R[Original requests<br/>REQ-]
-  R --> F[02 Decision flow<br/>and five criteria]
-  F --> M[04 Placement matrix<br/>ONT- SEM- DAT- APP-]
-  L[01 Layer definitions] -. reference .-> F
-  OD[06 Ontology design] -. ONT details .-> M
+  subgraph B["Without deciding placement"]
+    direction TB
+    D1["Dashboard<br/>churn = formula A"] --> R1(["3.1%"])
+    P1["AI prompt<br/>churn = formula B"] --> R2(["2.8%"])
+    J1["Monthly batch<br/>churn = formula C"] --> R3(["3.4%"])
+  end
+  subgraph A["AI-ready: one place for each definition"]
+    direction TB
+    D2["Dashboard"] --> DEF
+    P2["AI agent"] --> DEF
+    J2["Monthly batch"] --> DEF
+    DEF["Ontology and semantic layer<br/>one definition of churn"] --> R4(["3.1% wherever you ask"])
+  end
+  B ~~~ A
 ```
+
+On the left, the screen, the prompt and the batch each define "churn rate" their own way. A person who knows the dashboard figure runs a little high can adjust for it; an AI cannot. On the right, the definition lives in one place and everything references it. This framework sets out how to decide the placement of each requirement so that you end up on the right.
 
 ## The four layers and the cross-cutting policy
 
