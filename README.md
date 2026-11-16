@@ -36,10 +36,10 @@ The layers are listed in the order an AI processes a prompt. The AI works down t
 |---|---|---|---|
 | 1 | App / AI | Who is asking, and who sees what, how? | Screens, notifications, workflows, prompts, agent behavior, receiving the user context |
 | 2 | Ontology | What is it? | Customer, contract, state transitions, business rules, official terms |
-| 3 | Semantic | How is it counted? | Metric formulas, dimensions, grain, period definitions |
+| 3 | Semantic | How is it counted? | Metric formulas, how per-record values are counted, dimensions, grain, period definitions. The only entry point for reading data |
 | 4 | Data | Where from, how fresh, how correct? | Sources, ingestion frequency, quality rules, retention |
 
-The **policy** (who may see or do what) is not part of any one layer; it applies in all four. It controls which agents and tools can be used in the app / AI layer, which actions can be run in the ontology, which scope may be returned in the semantic layer, and masking in the data layer. Single-record checks and operations skip the semantic layer, so a policy placed in only one layer would leave a gap.
+The **policy** (who may see or do what) is not part of any one layer; it applies in all four. It controls which agents and tools can be used in the app / AI layer, which actions can be run in the ontology, which scope may be returned in the semantic layer, and masking in the data layer. Writes from operations skip the semantic layer, and some requests must be stopped at the agent or action stage, so a policy placed in only one layer would leave a gap.
 
 ### Inside the ontology
 

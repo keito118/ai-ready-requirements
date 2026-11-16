@@ -64,11 +64,11 @@ Because the point in time for ONT-001 is undefined, the AI uses the default (end
 | Step | References | What the AI settled |
 |---|---|---|
 | App / AI: receive | POL-001 | Asker = location staff; the member belongs to their own location |
-| VOC → STA | Member, ONT-002 | The member is currently enrolled |
+| VOC → STA | Member, ONT-002 | The member is currently enrolled (the current state is read through the semantic layer) |
 | RUL | Pauses are monthly, requested by the 20th of the previous month | After the 20th, the pause starts the month after next |
 | ACT | ONT-004 | Preconditions met. AI permission is "after a person confirms", so the AI drafts the request and waits for staff to confirm |
 
-Operation requests skip the semantic layer and go straight from the ontology (ACT) to a write in the data layer.
+Reads such as checking the state go through the semantic layer, but the write does not. The semantic layer is read-only, so operations go straight from the ontology (ACT) to a write in the data layer.
 
 ### 3.4 Open issues
 

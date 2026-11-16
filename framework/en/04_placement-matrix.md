@@ -82,6 +82,7 @@
 - [ ] Every `ONT-` and `SEM-` has a decision owner
 - [ ] Each `ONT-` only references earlier elements (no references in the other direction)
 - [ ] Every `SEM-` references the `ONT-` it counts
+- [ ] Every read of data, including values used in single-record checks, goes through a `SEM-` definition (no AI or app queries the data layer directly)
 - [ ] States (STA) have a point-in-time definition, and actions (ACT) have an AI permission
 
 ## 5. Open issues

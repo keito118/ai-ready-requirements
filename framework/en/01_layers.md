@@ -23,7 +23,7 @@ flowchart TB
 When an AI receives a prompt, it works down the layers: **receive (app / AI) → settle the meaning (ontology) → choose how to count (semantic) → fetch values (data)**, then follows the results back up to answer.
 
 - Meaning is settled before counting, so the ontology is read before the semantic layer. Semantic-layer metrics only count the ontology's concepts; they never invent new ones.
-- Processing that needs no counting, such as a single-record check or an operation, skips the semantic layer (see [07 How AI processes a prompt](07_ai-processing-flow.md)).
+- Every read of data goes through the semantic layer, even a single-record check. The rule for the check lives in the ontology, and the way to count the values it uses (such as each member's check-ins in the last 14 days) lives in the semantic layer. Only two things skip it: questions that only ask for a definition (they stop at the ontology), and writes from operations (from the action definition to the data layer) (see [07 How AI processes a prompt](07_ai-processing-flow.md)).
 - **Policy** (who may see and do what) is not placed in any one layer; it is enforced in all four.
 
 Each meaning and each way of counting lives in exactly one place that everyone who needs it can reach; other layers only reference it.
@@ -34,7 +34,7 @@ Each meaning and each way of counting lives in exactly one place that everyone w
 |---|---|---|---|---|
 | App / AI | Who sees what, how, and what it does | Screens, reports, notifications, workflows, AI prompts and tools, receiving the user context (who, which department), UX defaults and sort orders | Business rules and metric definitions (if written here they drift from other consumers) | Web apps, BI dashboards, chat UIs, AI agents |
 | Ontology | The business's things, relationships and rules | Entities (customer, contract, product), relationships (a customer has many contracts), states and transitions (contract: applied → active → cancelled), business rules (cancellations close at month end), the official meaning of terms | Calculation formulas, display labels, quirks of source systems | Conceptual model, knowledge graph, domain model, glossary, master data definitions |
-| Semantic | The definition of the numbers | Metric formulas (revenue, churn rate), dimensions, grain, period definitions (fiscal or calendar month) | The definition of business concepts themselves, screen layout | Metrics layer, dbt semantic models, BI data models, metric catalog |
+| Semantic | The definition of the numbers | Metric formulas (revenue, churn rate), how per-record values are counted (each member's check-ins in the last 14 days), dimensions, grain, period definitions (fiscal or calendar month) | The definition of business concepts themselves, screen layout | Metrics layer, dbt semantic models, BI data models, metric catalog |
 | Data | Where data comes from and how good it is | Source systems, ingestion method and frequency, data quality rules (missing, duplicate, inconsistent), history handling, retention, lineage | The meaning of metrics, business rule decisions | Data warehouse / lake, ETL / ELT, data quality checks, data catalog |
 
 ### What the policy does in each layer
@@ -63,7 +63,7 @@ Define each policy rule once, and apply the same rule in all four layers. Asking
 | T3: Would it **change** if the system were replaced? | Data | Go to T4 | "Check-ins are in the entry system's checkin table" → data |
 | T4: Is it about who may **see or do** what? | Policy (cross-cutting) | App / AI layer | "Location managers see only their own location's members" → policy |
 
-T1 separates **classifications that can be decided one record at a time (ontology)** from **the result of counting them (semantic)**. The semantic layer then never invents new concepts; it only counts the ontology's concepts.
+T1 separates **classifications that can be decided one record at a time (ontology)** from **the result of counting them (semantic)**. The semantic layer then never invents new concepts; it only counts the ontology's concepts. T1 and T2 decide **where a definition lives**, not the route the AI takes: even a single-record check gets its values from the semantic layer.
 
 ## Contracts between layers
 
@@ -75,6 +75,7 @@ Even with the layers separated, AI gets lost if the joins are undefined. Require
 | Semantic → ontology | Every metric names the concept ID it counts, and the state and rule IDs it uses | Metrics carry their own embedded conditions and duplicate the concept's definition |
 | Data → ontology | Every entity is mapped to the source ID that makes it unique (the matching key) | The same member is counted as two people |
 | Data → semantic | Every metric is mapped to its source tables and columns, and their freshness (as of when) | AI answers "this month" with stale data |
+| Semantic → data | Every read of data, even of one record, goes through a semantic-layer definition. Neither AI nor apps write queries against the data layer directly | AI writes SQL on the spot, and the same question gets different answers |
 
 For how to break the ontology layer down further, see [06 Ontology design guide](06_ontology-design.md).
 
