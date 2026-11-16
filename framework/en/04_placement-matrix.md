@@ -22,7 +22,7 @@
 | `APP-` | A requirement placed in the app / AI layer |
 | `POL-` | A cross-cutting policy requirement: who may see what |
 
-> When used together with a requirements definition (such as `FR-` IDs from doc-templates), write the `FR-` number in the "Related ID" column so requirements stay traceable.
+> When used together with a requirements definition (such as functional requirement `FR-` IDs), write the `FR-` number in the "Related ID" column so requirements stay traceable.
 
 ## 1. Original requests
 
@@ -40,6 +40,7 @@
 | SEM-001 | REQ-001 | | Semantic | | | | | | | | | |
 | DAT-001 | REQ-001 | | Data | - | - | - | - | - | - | | | |
 | APP-001 | REQ-001 | | App / AI | | | | | | | | | |
+| POL-001 | REQ-001 | | Policy | | | | | | | | | |
 
 ## 3. Requirements by layer
 
@@ -70,6 +71,14 @@
 | ID | Screen, feature or agent | Users | Definitions referenced | Behavior and display |
 |---|---|---|---|---|
 | APP-001 | | | SEM- / ONT- | |
+
+### 3.5 Policy (cross-cutting)
+
+> Write one rule per row, and mark the layers that enforce it. A layer that does not enforce it becomes a way around it.
+
+| ID | Target (data, metric, action, agent) | Who | Scope they may see or do | App / AI | Ontology | Semantic | Data |
+|---|---|---|---|---|---|---|---|
+| POL-001 | | | | | | | |
 
 ## 4. Placement checklist
 

@@ -45,7 +45,7 @@ Combining both axes gives a picture like this:
 |  | VOC Vocabulary | STR Structure | STA States and events | RUL Rules | ACT Actions |
 |---|---|---|---|---|---|
 | Core | Member, contract, location | Member—contract—location | Member status, check-in, cancellation request | Month-end cancellation, active member | Cancel membership, pause request |
-| Domain (accounting) | Recognition, suspension fee | Contract—invoice | Invoice status, payment | Pro-rata calculation | Refund |
+| Domain (accounting) | Recognition, pause fee | Contract—invoice | Invoice status, payment | Pro-rata calculation | Refund |
 | Domain (location operations) | Visit, outreach | Member—assigned staff | Outreach done | Outreach target conditions | Log outreach |
 
 ## 4. Reference order

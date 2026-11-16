@@ -2,7 +2,7 @@
 
 > Questions for interviewing business stakeholders. As AI speeds up implementation, more of the requirements effort shifts into these interviews. The questions are ordered so that asking each layer's set gives you what you need to place requirements.
 >
-> How to use: start with "0. Overall", then dig into sections 1–4 for each business term or number that comes up. Copy the answers as-is into the "Original request" column of the [04 placement matrix](04_placement-matrix.md).
+> How to use: start with "0. Overall", then dig into sections 1–4 for each business term or number that comes up. Unlike the order in which AI processes a prompt (app / AI first), interviews start from meaning (the ontology), because without meaning you cannot decide how to count or how to present. Copy the answers as-is into the "Original request" column of the [04 placement matrix](04_placement-matrix.md).
 
 ## 0. Overall
 
@@ -60,7 +60,7 @@
 | A-01 | Who uses it, when, and on what device? | Usage scenarios |
 | A-02 | What should be obvious at a glance? | Screen priorities, highlighting |
 | A-03 | Which task takes the most effort today? | Candidates for automation or AI |
-| A-04 | What evidence would make you trust an AI's answer? | How sources are shown. The sources should be lower-layer definitions |
+| A-04 | What evidence would make you trust an AI's answer? | How sources are shown. The sources should be ontology or semantic-layer definitions |
 | A-05 | When the AI is wrong, who notices and how is it fixed? | Human review points, agent permissions |
 
 ## Signals to watch for during interviews
