@@ -85,6 +85,21 @@ The AI does not need to read all five elements every time.
 
 **Even single-record checks get their values from the semantic layer.** The rule for the check (what makes a member active) lives in the ontology; how the values it uses are counted (check-ins in the last 14 days) lives in the semantic layer. Checking with a metric instead of the rule, or writing the count separately for each check, leads to mismatches such as "cancelled in the totals, but enrolled on the member's own screen".
 
+### 4.4 Going back, and when to stop
+
+The order is the direction of references, not a single pass. If the AI is reading a rule and needs to know what "enrolled" means, it may follow the ID in the rule back to the state. References always point to earlier elements, so going back never creates a loop. Interviews work the same way: if, while pinning down a rule, you find a term is not defined well enough, go back to the vocabulary and add it.
+
+Following references, however, has no natural end. The AI stops retrieving when any of the following applies.
+
+| Stop when | Meaning |
+|---|---|
+| Settled | Every item the kind of question needs (what 4.2 settles, within the range 4.3 reads) is filled |
+| Nothing new | Every reference leads only to definitions already retrieved |
+| Limit reached | A predefined limit on reference depth or count is reached. State any missing items as assumptions in the answer |
+| Not defined | The definition is not there. Do not guess; record it as a gap in the definitions (the way back in [07](07_ai-processing-flow.md)) |
+
+Set the actual limits to match how the AI platform you use retrieves information.
+
 ## 5. Required fields
 
 ### 5.1 Common to every element
