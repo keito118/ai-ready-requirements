@@ -16,23 +16,17 @@ This framework fixes the placement criteria in advance, so that interviews, plac
 
 ```mermaid
 flowchart LR
-  subgraph B["Without deciding placement"]
-    direction TB
-    D1["Dashboard<br/>churn = formula A"] --> R1(["3.1%"])
-    P1["AI prompt<br/>churn = formula B"] --> R2(["2.8%"])
-    J1["Monthly batch<br/>churn = formula C"] --> R3(["3.4%"])
-  end
-  subgraph A["AI-ready: one place for each definition"]
-    direction TB
-    D2["Dashboard"] --> DEF
-    P2["AI agent"] --> DEF
-    J2["Monthly batch"] --> DEF
-    DEF["Ontology and semantic layer<br/>one definition of churn"] --> R4(["3.1% wherever you ask"])
-  end
-  B ~~~ A
+  A["AI builds and runs systems<br/>development effort falls"] --> B["AI knows only<br/>what is written down"]
+  B --> C["Make requirements clear<br/>before development"]
+  C --> C1["Interview the business<br/>in more depth"]
+  C --> C2["Decide where<br/>each meaning lives"]
+  C1 --> E["AI-ready<br/>people and AI reference<br/>the same definitions"]
+  C2 --> E
+  classDef fw fill:#e8f0fe,stroke:#3b6fd8,stroke-width:2px,color:#1c2230
+  class C1,C2 fw
 ```
 
-On the left, the screen, the prompt and the batch each define "churn rate" their own way. A person who knows the dashboard figure runs a little high can adjust for it; an AI cannot. On the right, the definition lives in one place and everything references it. This framework sets out how to decide the placement of each requirement so that you end up on the right.
+The two blue boxes are the work that grows in requirements definition, and this framework sets out how to do it.
 
 ## The four layers and the cross-cutting policy
 
